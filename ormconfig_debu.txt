@@ -1,0 +1,20 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "postgres",
+  "password": "trakinvest",
+  "database": "smartup123",
+  "synchronize": false,
+  "logging": false,
+  "entities": [
+    "build/app/4.1entities/*/.js"
+  ],
+  "migrations": [
+     "build/app/migration/*/.js"
+  ],
+  "cli": {
+    "entitiesDir": "app/4.1entities",
+    "migrationsDir": "app/migration"
+  }
+}
