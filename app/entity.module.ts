@@ -1,12 +1,6 @@
 import { HttpModule, HttpService, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 // import { ProductService } from './product.service';
 
-import { GroupUserFacade } from './facade/groupUserFacade';
-import { UserFacade } from './facade/userFacade';
-import { GroupUserRoutes } from './routes/groupUserRoutes';
-import { GroupFacade } from './facade/groupFacade';
-import { UserRoutes } from './routes/userRoutes';
-import { GroupRoutes } from './routes/groupRoutes';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from 'submodules/platform-3.0-Entities/channel';
 import { ChannelBillPlan } from 'submodules/platform-3.0-Entities/channelBillPlan';
@@ -42,9 +36,29 @@ import {Subscription} from 'submodules/platform-3.0-Entities/subscription'
 import { SubscriptionOrderDto } from 'submodules/platform-3.0-Dtos/subscriptionOrderDto';
 import { SubscriptionOrder } from 'submodules/platform-3.0-Entities/subscriptionOrder';
 import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
-import { CommunityFacade } from './facade/communityFacade';
-import { CommunityRoutes } from './routes/communityRoutes';
 import { ChannelGroup } from 'submodules/platform-3.0-Entities/channelGroup';
+import { ChannelBillPlanRoutes } from './routes/channelBillPlanRoutes';
+import { ChannelGroupRoutes } from './routes/channelGroupRoutes';
+import { ChannelRoutes } from './routes/channelRoutes';
+import { EnrolledMeetingRoutes } from './routes/enrolledMeetingRoutes';
+import { LessonDataReviewRoutes } from './routes/lessonDataReviewRoutes';
+import { LessonDataRoutes } from './routes/lessonDataRoutes';
+import { LessonDataUserRoutes } from './routes/lessonDataUserRoutes';
+import { LessonRoutes } from './routes/lessonRoutes';
+import { LiveContentRoutes } from './routes/liveContentRoutes';
+import { LiveContentUserRoutes } from './routes/liveContentUserRoutes';
+import { SectionRoutes } from './routes/sectionRoutes';
+import { ChannelBillPlanFacade } from './facade/channelBillPlanFacade';
+import { ChannelGroupFacade } from './facade/channelGroupFacade';
+import { ChannelFacade } from './facade/channelFacade';
+import { EnrolledMeetingFacade } from './facade/enrolledMeetingFacade';
+import { LessonDataReviewFacade } from './facade/lessonDataReviewFacade';
+import { LessonDataFacade } from './facade/lessonDataFacade';
+import { LessonDataUserFacade } from './facade/lessonDataUserFacade';
+import { LessonFacade } from './facade/lessonFacade';
+import { LiveContentUserFacade } from './facade/liveContentUserFacade';
+import { LiveContentFacade } from './facade/liveContentFacade';
+import { SectionFacade } from './facade/sectionFacade';
 // import { ChannelBillPlan } from './smartup_entities/channelBillPlan';
 // import { Channel } from './smartup_entities/channel';
 
@@ -52,8 +66,8 @@ import { ChannelGroup } from 'submodules/platform-3.0-Entities/channelGroup';
   imports: [HttpModule,
     TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder]),
   ],
-  providers: [ CommunityFacade,GroupUserFacade,GroupFacade,UserFacade],
-  controllers: [CommunityRoutes, GroupUserRoutes, GroupRoutes, UserRoutes]
+  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,LiveContentFacade,LiveContentUserFacade,SectionFacade],
+  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,LiveContentRoutes,LiveContentUserRoutes,SectionRoutes]
 })
 // export class  EntityModule{ }
 export class EntityModule implements NestModule {

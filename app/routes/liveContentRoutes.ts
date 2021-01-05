@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Put, Req } from '@nestjs/common';
 // import { LiveContentDto } from 'app/smartup_dtos/LiveContentDto';
 // import { Tenant } from 'app/smartup_entities/tenant';
-import { LiveContentFacade } from 'app/facade/LiveContentFacade';
+import { LiveContentFacade } from 'app/facade/liveContentFacade';
 import { plainToClass } from 'class-transformer';
 // import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
@@ -12,12 +12,13 @@ import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_
 import { LiveContentDto } from '../../submodules/platform-3.0-Dtos/liveContentDto';
 import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+// import { RequestModel } from '../../submodules/latform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 
 
 @Controller('liveContent')
 export class LiveContentRoutes{
 
-  constructor(private LiveContentFacade: LiveContentFacade) { }
+  constructor(private liveContentFacade: LiveContentFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LIVECONTENT_ADD','LIVECONTENT_UPDATE','LIVECONTENT_DELETE'];

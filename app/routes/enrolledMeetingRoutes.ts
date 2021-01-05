@@ -9,9 +9,10 @@ import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodule
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_SQS';
-import { EnrolledMeetingDto } from '../../submodules/platform-3.0-Dtos/enrolledMeetingDto';
+// import { EnrolledMeetingDto } from '../../submodules/platform-3.0-Dtos/enrolledMeetingDto';
 import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { EnrolledMeetingDto } from '../../submodules/platform-3.0-Dtos/enrolledMeetingsDto';
 
 
 @Controller('enrolledMeeting')

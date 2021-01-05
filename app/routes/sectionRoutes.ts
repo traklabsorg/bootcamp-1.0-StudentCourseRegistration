@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Put, Req } from '@nestjs/common';
 // import { SectionDto } from 'app/smartup_dtos/SectionDto';
 // import { Tenant } from 'app/smartup_entities/tenant';
-import { SectionFacade } from 'app/facade/SectionFacade';
+import { SectionFacade } from 'app/facade/sectionFacade';
 import { plainToClass } from 'class-transformer';
 // import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
@@ -17,7 +17,7 @@ import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private SectionFacade: SectionFacade) { }
+  constructor(private sectionFacade: SectionFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];

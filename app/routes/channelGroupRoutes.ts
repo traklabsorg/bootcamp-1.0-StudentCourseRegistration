@@ -9,9 +9,10 @@ import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodule
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_SQS';
-import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
+// import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
 import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
 
 
 @Controller('channelGroup')

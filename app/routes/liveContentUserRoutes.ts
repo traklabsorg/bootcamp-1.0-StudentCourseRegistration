@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Put, Req } from '@nestjs/common';
 // import { LiveContentUserDto } from 'app/smartup_dtos/LiveContentUserDto';
 // import { Tenant } from 'app/smartup_entities/tenant';
-import { LiveContentUserFacade } from 'app/facade/LiveContentUserFacade';
+import { LiveContentUserFacade } from 'app/facade/liveContentUserFacade';
 import { plainToClass } from 'class-transformer';
 // import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
@@ -17,7 +17,7 @@ import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules
 @Controller('liveContentUser')
 export class LiveContentUserRoutes{
 
-  constructor(private LiveContentUserFacade: LiveContentUserFacade) { }
+  constructor(private liveContentUserFacade: LiveContentUserFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LIVECONTENTUSER_ADD','LIVECONTENTUSER_UPDATE','LIVECONTENTUSER_DELETE'];

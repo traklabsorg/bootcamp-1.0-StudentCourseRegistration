@@ -8,7 +8,8 @@ import AppService from "../../submodules/platform-3.0-Framework/AppService/AppSe
 // import AppService from "smartup_framework/AppService/AppService";
 import { Repository } from "typeorm";
 // let dto = require('../../submodules/platform-3.0-Mappings/lessonDataReviewDto"')
-let dto = require('../../submodules/platform-3.0-Mappings/lessonDataReviewMapper')
+// let dto = require('../../submodules/platform-3.0-Mappings/lessonDataReviewMapper')
+let dto = require('../../submodules/platform-3.0-Mappings/lessonDataReviewMapping')
 @Injectable()
 export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDataReviewDto> {
     constructor(@InjectRepository(LessonDataReview) private readonly lessonDataReviewRepository: Repository<LessonDataReview>,public http:HttpService) {

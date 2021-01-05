@@ -182,11 +182,11 @@ export class ChannelRoutes implements OnModuleInit{
     }
   }
 
-  @Get("/expt/query1")
-  async func2(): Promise<any>{
-    this.channelFacade.getChannelRequestModel();
-    return null;
-  }
+  // @Get("/expt/query1")
+  // async func2(): Promise<any>{
+  //   this.channelFacade.getChannelRequestModel();
+  //   return null;
+  // }
 
   @Delete(':id')
   deleteChannel(@Param('id') pk: string): Promise<ResponseModel<ChannelDto>>{
