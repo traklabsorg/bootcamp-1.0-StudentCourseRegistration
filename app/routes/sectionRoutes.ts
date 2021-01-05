@@ -1,29 +1,115 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Put, Req } from '@nestjs/common';
 // import { SectionDto } from 'app/smartup_dtos/SectionDto';
 // import { Tenant } from 'app/smartup_entities/tenant';
-import { SectionFacade } from 'app/facade/sectionFacade';
+import { SectionFacade } from 'app/facade/SectionFacade';
 import { plainToClass } from 'class-transformer';
-import { RequestModel } from 'submodules/platform-3.0-Framework/entities/RequestModel';
-import { ResponseModel } from 'submodules/platform-3.0-Framework/entities/ResponseModel';
+// import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // let dto_maps = require('../smartup_dtos/SectionDto')
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
-import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
-import { SectionDto } from 'submodules/platform-3.0-Dtos/sectionDto';
+import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_SQS';
+import { SectionDto } from '../../submodules/platform-3.0-Dtos/sectionDto';
+import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
+import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 
 
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private sectionFacade: SectionFacade) { }
+  constructor(private SectionFacade: SectionFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
+  private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
+  private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
+  
+  onModuleInit() {
+    // const requestPatterns = [
+    //   'group-create'
+    // ];
+    for (var i = 0; i < this.topicArray.length; i++) {
+      this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
+        var value = this.topicArray[i];
+        return async (result) => {
+          await console.log("Result is........" + JSON.stringify(result));
+          try {
+            let responseModelOfGroupDto: any = null;
+            console.log(`listening to  ${value} topic.....result is....`);
+            // ToDo :- add a method for removing queue message from queue....
+            switch (value) {
+              case 'SECTION_ADD':
+                console.log("Inside SECTION_ADD Topic");
+                responseModelOfGroupDto = this.createSection(result["message"]);
+                break;
+              case 'SECTION_UPDATE':
+                console.log("Inside SECTION_UPDATE Topic");
+              //  responseModelOfGroupDto = this.updateSection(result["message"]);
+                break;
+              case 'SECTION_DELETE':
+                console.log("Inside SECTION_DELETE Topic");
+                responseModelOfGroupDto = this.deleteSection(result["message"]);
+                break;
+  
+            }
+  
+            console.log("Result of aws  is...." + JSON.stringify(result));
+            // let responseModelOfGroupDto = this.userFacade.create(result["message"]);
+  
+            //this.creategroup(result["message"])
+            for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
+              const element = result.OnSuccessTopicsToPush[index];
+              this.sns_sqs.publishMessageToTopic(element, result)
+            }
+          }
+          catch (error) {
+            await console.log("Inside Catch.........");
+            await console.log(error, result);
+            for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
+              const element = result.OnFailureTopicsToPush[index];
+              this.sns_sqs.publishMessageToTopic(element, result);
+            }
+            
+          }
+        }
+      })())
+    }
+
+
+
+    
+    
+  }
 
   @Get("/")
   allProducts() {
     try {
       console.log("Inside controller ......section");
       return this.sectionFacade.getAll();
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/page")
+  async allProductsByPage(@Body() requestModel:RequestModelQuery,@Req() req:Request) {
+    try {
+      console.log("Inside controller ......group");
+      let requestModel: any = req.headers['RequestModel'];
+      let result = await this.sectionFacade.search(requestModel);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/page/:pageSize/:pageNumber")
+  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Body() requestModel:RequestModelQuery) {
+    try {
+      console.log("Inside controller ......group by pageSize & pageNumber");
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let result = await this.sectionFacade.search(requestModel);
+      return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -51,8 +137,24 @@ export class SectionRoutes{
     }
   }
 
+
+  @Put("/:id")
+  async updateSection(@Param('id') id: number,@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<GroupDto></GroupDto>....Promise<ResponseModel<Grou[pDto>>]
+    try {
+      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      body.DataCollection.forEach((dto: SectionDto) => {
+        dto.Id = id;
+      })
+      return await this.sectionFacade.updateEntity(body);
+    } catch (error) {
+      await console.log("Error is....." + error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
   @Delete(':id')
-  deleteGroup(@Param('id') pk: string): Promise<ResponseModel<SectionDto>>{
+  deleteSection(@Param('id') pk: string): Promise<ResponseModel<SectionDto>>{
     try {
       console.log("Id is......" + pk);
           return this.sectionFacade.deleteById([parseInt(pk, 10)])

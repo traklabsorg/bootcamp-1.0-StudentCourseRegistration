@@ -1,22 +1,26 @@
-import { Logger } from '@nestjs/common';
+// import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { ApiGatewayModule } from 'app-gateway.module';
 import { apiGatewayConfig } from 'app/apiGatewayConfig';
+import { GroupRoutes } from 'app/routes/groupRoutes';
 import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
 import { AppModule } from './app.module';
+import {Logger} from "nestjs-pino"
 // import { microserviceConfig } from "./app/microserviceConfig";
 
-const logger = new Logger();
+// const logger = new Logger();
 // let routes = new GroupRoutes();
 
-// var sns_sqs = SNS_SQS.getInstance();
+var sns_sqs = SNS_SQS.getInstance();
 // import config from "./config";
 require('dotenv').config();
 
+declare const module: any;
+
 const port =  process.env.port || 3000;
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{logger:false});
   // app.connectMicroservice(apiGatewayConfig);
   // const app1 = await NestFactory.createMicroservice(ApiGatewayModule, {
   //   transport: Transport.TCP,
@@ -36,11 +40,19 @@ async function bootstrap() {
   //   },
   // });
   // app.connectMicroservice(microserviceConfig);
-
   
 
+  
+  app.useLogger(app.get(Logger))
   await app.startAllMicroservicesAsync();
   await app.listen(port);
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
+
+  
   // app1.listen(() => logger.log('Microservice A is listening'));
   // testTopicListener();
 }
