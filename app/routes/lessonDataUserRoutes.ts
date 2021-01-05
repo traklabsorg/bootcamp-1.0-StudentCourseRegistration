@@ -19,66 +19,66 @@ export class LessonDataUserRoutes{
 
   constructor(private lessonDataUserFacade: LessonDataUserFacade) { }
 
-  private sns_sqs = SNS_SQS.getInstance();
-  private topicArray = ['LESSONDATAUSER_ADD','LESSONDATAUSER_UPDATE','LESSONDATAUSER_DELETE'];
-  private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
+  // private sns_sqs = SNS_SQS.getInstance();
+  // private topicArray = ['LESSONDATAUSER_ADD','LESSONDATAUSER_UPDATE','LESSONDATAUSER_DELETE'];
+  // private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
   
-  onModuleInit() {
-    // const requestPatterns = [
-    //   'group-create'
-    // ];
-    for (var i = 0; i < this.topicArray.length; i++) {
-      this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
-        var value = this.topicArray[i];
-        return async (result) => {
-          await console.log("Result is........" + JSON.stringify(result));
-          try {
-            let responseModelOfGroupDto: any = null;
-            console.log(`listening to  ${value} topic.....result is....`);
-            // ToDo :- add a method for removing queue message from queue....
-            switch (value) {
-              case 'LESSONDATAUSER_ADD':
-                console.log("Inside LESSONDATAUSER_ADD Topic");
-                responseModelOfGroupDto = this.createLessonDataUser(result["message"]);
-                break;
-              case 'LESSONDATAUSER_UPDATE':
-                console.log("Inside LESSONDATAUSER_UPDATE Topic");
-              //  responseModelOfGroupDto = this.updateLessonDataUser(result["message"]);
-                break;
-              case 'LESSONDATAUSER_DELETE':
-                console.log("Inside LESSONDATAUSER_DELETE Topic");
-                responseModelOfGroupDto = this.deleteLessonDataUser(result["message"]);
-                break;
+  // onModuleInit() {
+  //   // const requestPatterns = [
+  //   //   'group-create'
+  //   // ];
+  //   for (var i = 0; i < this.topicArray.length; i++) {
+  //     this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
+  //       var value = this.topicArray[i];
+  //       return async (result) => {
+  //         await console.log("Result is........" + JSON.stringify(result));
+  //         try {
+  //           let responseModelOfGroupDto: any = null;
+  //           console.log(`listening to  ${value} topic.....result is....`);
+  //           // ToDo :- add a method for removing queue message from queue....
+  //           switch (value) {
+  //             case 'LESSONDATAUSER_ADD':
+  //               console.log("Inside LESSONDATAUSER_ADD Topic");
+  //               responseModelOfGroupDto = this.createLessonDataUser(result["message"]);
+  //               break;
+  //             case 'LESSONDATAUSER_UPDATE':
+  //               console.log("Inside LESSONDATAUSER_UPDATE Topic");
+  //             //  responseModelOfGroupDto = this.updateLessonDataUser(result["message"]);
+  //               break;
+  //             case 'LESSONDATAUSER_DELETE':
+  //               console.log("Inside LESSONDATAUSER_DELETE Topic");
+  //               responseModelOfGroupDto = this.deleteLessonDataUser(result["message"]);
+  //               break;
   
-            }
+  //           }
   
-            console.log("Result of aws  is...." + JSON.stringify(result));
-            // let responseModelOfGroupDto = this.userFacade.create(result["message"]);
+  //           console.log("Result of aws  is...." + JSON.stringify(result));
+  //           // let responseModelOfGroupDto = this.userFacade.create(result["message"]);
   
-            //this.creategroup(result["message"])
-            for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
-              const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, result)
-            }
-          }
-          catch (error) {
-            await console.log("Inside Catch.........");
-            await console.log(error, result);
-            for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
-              const element = result.OnFailureTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, result);
-            }
+  //           //this.creategroup(result["message"])
+  //           for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
+  //             const element = result.OnSuccessTopicsToPush[index];
+  //             this.sns_sqs.publishMessageToTopic(element, result)
+  //           }
+  //         }
+  //         catch (error) {
+  //           await console.log("Inside Catch.........");
+  //           await console.log(error, result);
+  //           for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
+  //             const element = result.OnFailureTopicsToPush[index];
+  //             this.sns_sqs.publishMessageToTopic(element, result);
+  //           }
             
-          }
-        }
-      })())
-    }
+  //         }
+  //       }
+  //     })())
+  //   }
 
 
 
     
     
-  }
+  // }
 
   @Get("/")
   allProducts() {

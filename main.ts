@@ -1,14 +1,13 @@
-// import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { ApiGatewayModule } from 'app-gateway.module';
 import { apiGatewayConfig } from 'app/apiGatewayConfig';
 import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
 import { AppModule } from './app.module';
-// import {Logger} from "nestjs-pino"
 // import { microserviceConfig } from "./app/microserviceConfig";
 
-// const logger = new Logger();
+const logger = new Logger();
 // let routes = new GroupRoutes();
 
 var sns_sqs = SNS_SQS.getInstance();
@@ -19,7 +18,7 @@ declare const module: any;
 
 const port =  process.env.port || 3000;
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,{logger:false});
+  const app = await NestFactory.create(AppModule);
   // app.connectMicroservice(apiGatewayConfig);
   // const app1 = await NestFactory.createMicroservice(ApiGatewayModule, {
   //   transport: Transport.TCP,
@@ -42,7 +41,7 @@ async function bootstrap() {
   
 
   
-  // app.useLogger(app.get(Logger))
+
   await app.startAllMicroservicesAsync();
   await app.listen(port);
 
