@@ -28,4 +28,4 @@ EXPOSE 3000
 
 # Running the app
 #CMD "npm" "run" "start"
-CMD "nest" "start" "./build/main.js"
+CMD "npm" "run" "start:dev" "./build/main.js"
