@@ -3,14 +3,12 @@ import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { ApiGatewayModule } from 'app-gateway.module';
 import { apiGatewayConfig } from 'app/apiGatewayConfig';
-import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
 import { AppModule } from './app.module';
 // import { microserviceConfig } from "./app/microserviceConfig";
 
 const logger = new Logger();
 // let routes = new GroupRoutes();
 
-var sns_sqs = SNS_SQS.getInstance();
 // import config from "./config";
 require('dotenv').config();
 

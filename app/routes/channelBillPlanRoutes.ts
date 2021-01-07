@@ -8,10 +8,11 @@ import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodule
 // let dto_maps = require('../smartup_dtos/ChannelBillPlanDto')
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
-import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_SQS';
+// import { SNS_SQS } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-AWS/SNS_SQS';
 import { ChannelBillPlanDto } from '../../submodules/platform-3.0-Dtos/channelBillPlanDto';
 import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { SNS_SQS } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-AWS/SNS_SQS';
 
 
 @Controller('channelBillPlan')

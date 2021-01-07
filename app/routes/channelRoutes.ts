@@ -9,7 +9,7 @@ import { Request } from 'express';
 import { ChannelDto } from '../../submodules/platform-3.0-Dtos/channelDto';
 import { RequestModel} from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
-import { SNS_SQS } from '../../submodules/platform-3.0-Framework/aws/models/SNS_SQS';
+import { SNS_SQS } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-AWS/SNS_SQS';
 import { json } from 'body-parser';
 import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 // let dto_maps = require('../smartup_dtos/channelDto')

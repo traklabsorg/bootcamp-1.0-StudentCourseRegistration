@@ -33,9 +33,7 @@ import { Section } from 'submodules/platform-3.0-Entities/section';
 import { ServiceConsumer } from 'submodules/platform-3.0-Entities/serviceConsumer';
 import {Notification} from 'submodules/platform-3.0-Entities/notifications'
 import {Subscription} from 'submodules/platform-3.0-Entities/subscription'
-import { SubscriptionOrderDto } from 'submodules/platform-3.0-Dtos/subscriptionOrderDto';
 import { SubscriptionOrder } from 'submodules/platform-3.0-Entities/subscriptionOrder';
-import { SNS_SQS } from 'submodules/platform-3.0-Framework/aws/models/SNS_SQS';
 import { ChannelGroup } from 'submodules/platform-3.0-Entities/channelGroup';
 import { ChannelBillPlanRoutes } from './routes/channelBillPlanRoutes';
 import { ChannelGroupRoutes } from './routes/channelGroupRoutes';
