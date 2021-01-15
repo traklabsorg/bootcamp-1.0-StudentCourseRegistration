@@ -2,7 +2,7 @@ import { HttpService, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 // import { EnrolledMeetingDto } from "../../submodules/platform-3.0-Dtos/enrolledMeetingDto";
 // import { EnrolledMeeting } from "../../submodules/platform-3.0-Entities/enrolledMeeting";
-import AppService from "../../submodules/platform-3.0-Framework/AppService/AppService";
+import AppService from "../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/AppService/AppService";
 // import { TenantDto } from "app/smartup_dtos/tenantDto";
 // import { Tenant } from "app/smartup_entities/tenant";
 // import AppService from "smartup_framework/AppService/AppService";

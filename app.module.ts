@@ -4,7 +4,7 @@
 // import { TypeOrmModule } from '@nestjs/typeorm';
 // import { EntityModule } from './app/entity.module';
 // import { Product } from './product/product.entity';
-import { GenericSubscriber } from 'submodules/platform-3.0-Framework/GenericSubscriber';
+
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_TYPE, DATABASE_USERNAME } from 'config';
 
 
@@ -33,6 +33,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EntityModule } from 'app/entity.module';
+import { AppController } from 'app.controller';
+import { AppService } from 'app.service';
+import { GenericSubscriber } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/GenericSubscriber';
 
 @Module({
   imports: [
@@ -41,12 +44,12 @@ import { EntityModule } from 'app/entity.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        type: 'postgres',
-        host: 'smartupdev.cjrt7sgid3vo.us-east-2.rds.amazonaws.com',
-        username: 'postgres',
-        password: '123Lid1234',
-        port:5432,
-        database: 'smartupdev',
+        type: DATABASE_TYPE,
+        host: DATABASE_HOST,
+        username: DATABASE_USERNAME,
+        password: DATABASE_PASSWORD,
+        port:DATABASE_PORT,
+        database: DATABASE_NAME,
         subscribers: [ GenericSubscriber ],
         synchronize: true,
         autoLoadEntities: true,
@@ -54,7 +57,11 @@ import { EntityModule } from 'app/entity.module';
         logging: 'all'
       }),
     }),
+    
     EntityModule
   ],
+  controllers: [AppController],
+  providers : [AppService]
+  
 })
 export class AppModule {}

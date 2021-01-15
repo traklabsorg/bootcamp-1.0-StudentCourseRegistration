@@ -2,7 +2,7 @@ import { HttpService, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChannelGroupDto } from "../../submodules/platform-3.0-Dtos/channelGroupDto";
 import { ChannelGroup } from "../../submodules/platform-3.0-Entities/channelGroup";
-import AppService from "../../submodules/platform-3.0-Framework/AppService/AppService";
+import AppService from "../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/AppService/AppService";
 
 import { Repository } from "typeorm";
 let dto = require('../../submodules/platform-3.0-Mappings/channelGroupMapper')

@@ -3,15 +3,15 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injec
 // import { Tenant } from 'app/smartup_entities/tenant';
 import { EnrolledMeetingFacade } from 'app/facade/enrolledMeetingFacade';
 import { plainToClass } from 'class-transformer';
-// import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
-import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
+// import { RequestModel } from ''submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // let dto_maps = require('../smartup_dtos/EnrolledMeetingDto')
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
-import { SNS_SQS } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-AWS/SNS_SQS';
+import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 // import { EnrolledMeetingDto } from '../../submodules/platform-3.0-Dtos/enrolledMeetingDto';
-import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
-import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
+import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { EnrolledMeetingDto } from '../../submodules/platform-3.0-Dtos/enrolledMeetingsDto';
 
 
@@ -23,6 +23,7 @@ export class EnrolledMeetingRoutes{
   // private sns_sqs = SNS_SQS.getInstance();
   // private topicArray = ['ENROLLEDMEETING_ADD','ENROLLEDMEETING_UPDATE','ENROLLEDMEETING_DELETE'];
   // private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
+  private enrolled_meeting_children_array = ["user","userMeetingProviders_Meeting"];
   
   // onModuleInit() {
   //   // const requestPatterns = [
@@ -84,31 +85,56 @@ export class EnrolledMeetingRoutes{
   @Get("/")
   allProducts() {
     try {
-      console.log("Inside controller ......enrolledMeeting");
+      console.log("Inside controller ......group");
       return this.enrolledMeetingFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Get("/page")
-  async allProductsByPage(@Body() requestModel:RequestModelQuery,@Req() req:Request) {
+
+  // @Get("/page")
+  // async allProductsByPage(@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller ......group");
+  //     console.log("RequestModel is......" + JSON.stringify(req.headers['requestmodel']));
+  //     let requestModel: any = JSON.parse(req.headers['requestmodel'].toString());
+  //     let result = await this.enrolledMeetingFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + error);
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+
+  @Get(':id')
+  getAllProductsByIds(@Param('id') id: number): Promise<ResponseModel<EnrolledMeetingDto>> {
     try {
-      console.log("Inside controller ......group");
-      let requestModel: any = req.headers['RequestModel'];
-      let result = await this.enrolledMeetingFacade.search(requestModel);
-      return result;
+      console.log("id is............." + JSON.stringify(id));
+      return this.enrolledMeetingFacade.getByIds([id]);
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Get("/page/:pageSize/:pageNumber")
-  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Body() requestModel:RequestModelQuery) {
+  
+
+  @Get("/:pageSize/:pageNumber")
+  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let isSubset = given_children_array.every(val => this.enrolled_meeting_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.enrolled_meeting_children_array.filter(el => el === val).length);
+      console.log("isSubset is......" + isSubset);
+      if (!isSubset) {
+        console.log("Inside Condition.....")
+        requestModel.Children = this.enrolled_meeting_children_array;
+      }
+      requestModel.Children.unshift('enrolledMeeting');
       let result = await this.enrolledMeetingFacade.search(requestModel);
       return result;
     } catch (error) {
@@ -116,36 +142,25 @@ export class EnrolledMeetingRoutes{
     }
   }
 
-  @Get(':pk')
-  getAllProductsByIds(@Param('pk') pk: string,@Req() req:Request): Promise<ResponseModel<EnrolledMeetingDto>>{
-    try {
-      console.log("id is............." + JSON.stringify(pk));
-      console.log("Request is....." + JSON.stringify(req.headers));
-      return this.enrolledMeetingFacade.getByIds([pk]);
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  @Post("/")
-  async createEnrolledMeeting(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<GroupDto></GroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  @Post("/") 
+  async createGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.enrolledMeetingFacade.create(body);
+      let result = await this.enrolledMeetingFacade.create(body);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
     } catch (error) {
       await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-
-  @Put("/:id")
-  async updateEnrolledMeeting(@Param('id') id: number,@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<GroupDto></GroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  @Put("/")
+  async updateGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      body.DataCollection.forEach((dto: EnrolledMeetingDto) => {
-        dto.Id = id;
-      })
       return await this.enrolledMeetingFacade.updateEntity(body);
     } catch (error) {
       await console.log("Error is....." + error);
@@ -153,9 +168,14 @@ export class EnrolledMeetingRoutes{
     }
   }
 
+  // @Get("/expt/query1")
+  // async func2(): Promise<any>{
+  //   this.enrolledMeetingFacade.getGroupRequestModel();
+  //   return null;
+  // }
 
   @Delete(':id')
-  deleteEnrolledMeeting(@Param('id') pk: string): Promise<ResponseModel<EnrolledMeetingDto>>{
+  deleteGroup(@Param('id') pk: string): Promise<ResponseModel<EnrolledMeetingDto>>{
     try {
       console.log("Id is......" + pk);
           return this.enrolledMeetingFacade.deleteById([parseInt(pk, 10)])
@@ -163,4 +183,5 @@ export class EnrolledMeetingRoutes{
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
+
 }

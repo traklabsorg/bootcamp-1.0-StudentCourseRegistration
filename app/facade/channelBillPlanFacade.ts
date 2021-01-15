@@ -2,11 +2,11 @@ import { HttpService, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChannelBillPlanDto } from "../../submodules/platform-3.0-Dtos/channelBillPlanDto";
 import { ChannelBillPlan } from "../../submodules/platform-3.0-Entities/channelBillPlan";
-import AppService from "../../submodules/platform-3.0-Framework/AppService/AppService";
 // import { TenantDto } from "app/smartup_dtos/tenantDto";
 // import { Tenant } from "app/smartup_entities/tenant";
 // import AppService from "smartup_framework/AppService/AppService";
 import { Repository } from "typeorm";
+import AppService from "../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/AppService/AppService";
 let dto = require('../../submodules/platform-3.0-Mappings/channelBillPlanMapper')
 
 @Injectable()

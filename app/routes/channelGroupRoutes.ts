@@ -3,16 +3,15 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injec
 // import { Tenant } from 'app/smartup_entities/tenant';
 import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 import { plainToClass } from 'class-transformer';
-// import { RequestModel } from ''../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
-import { ResponseModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
+// import { RequestModel } from ''submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 // let dto_maps = require('../smartup_dtos/ChannelGroupDto')
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
-import { SNS_SQS } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-AWS/SNS_SQS';
+import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
-import { RequestModelQuery } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
-import { RequestModel } from '../../submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
+import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 
 
 @Controller('channelGroup')
@@ -23,6 +22,7 @@ export class ChannelGroupRoutes{
   // private sns_sqs = SNS_SQS.getInstance();
   // private topicArray = ['CHANNELGROUP_ADD','CHANNELGROUP_UPDATE','CHANNELGROUP_DELETE'];
   // private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
+  private channel_group_children_array = ["group","channel"];
   
   // onModuleInit() {
   //   // const requestPatterns = [
@@ -84,31 +84,56 @@ export class ChannelGroupRoutes{
   @Get("/")
   allProducts() {
     try {
-      console.log("Inside controller ......channelGroup");
+      console.log("Inside controller ......group");
       return this.channelGroupFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Get("/page")
-  async allProductsByPage(@Body() requestModel:RequestModelQuery,@Req() req:Request) {
+
+  // @Get("/page")
+  // async allProductsByPage(@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller ......group");
+  //     console.log("RequestModel is......" + JSON.stringify(req.headers['requestmodel']));
+  //     let requestModel: any = JSON.parse(req.headers['requestmodel'].toString());
+  //     let result = await this.channelGroupFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + error);
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+
+  @Get(':id')
+  getAllProductsByIds(@Param('id') id: number): Promise<ResponseModel<ChannelGroupDto>> {
     try {
-      console.log("Inside controller ......group");
-      let requestModel: any = req.headers['RequestModel'];
-      let result = await this.channelGroupFacade.search(requestModel);
-      return result;
+      console.log("id is............." + JSON.stringify(id));
+      return this.channelGroupFacade.getByIds([id]);
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Get("/page/:pageSize/:pageNumber")
-  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Body() requestModel:RequestModelQuery) {
+  
+
+  @Get("/:pageSize/:pageNumber")
+  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let isSubset = given_children_array.every(val => this.channel_group_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.channel_group_children_array.filter(el => el === val).length);
+      console.log("isSubset is......" + isSubset);
+      if (!isSubset) {
+        console.log("Inside Condition.....")
+        requestModel.Children = this.channel_group_children_array;
+      }
+      requestModel.Children.unshift('channelGroup');
       let result = await this.channelGroupFacade.search(requestModel);
       return result;
     } catch (error) {
@@ -116,36 +141,25 @@ export class ChannelGroupRoutes{
     }
   }
 
-  @Get(':pk')
-  getAllProductsByIds(@Param('pk') pk: string,@Req() req:Request): Promise<ResponseModel<ChannelGroupDto>>{
-    try {
-      console.log("id is............." + JSON.stringify(pk));
-      console.log("Request is....." + JSON.stringify(req.headers));
-      return this.channelGroupFacade.getByIds([pk]);
-    } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  @Post("/")
-  async createChannelGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<GroupDto></GroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  @Post("/") 
+  async createGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.channelGroupFacade.create(body);
+      let result = await this.channelGroupFacade.create(body);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
     } catch (error) {
       await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-
-  @Put("/:id")
-  async updateChannelGroup(@Param('id') id: number,@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<GroupDto></GroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  @Put("/")
+  async updateGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      body.DataCollection.forEach((dto: ChannelGroupDto) => {
-        dto.Id = id;
-      })
       return await this.channelGroupFacade.updateEntity(body);
     } catch (error) {
       await console.log("Error is....." + error);
@@ -153,9 +167,14 @@ export class ChannelGroupRoutes{
     }
   }
 
+  // @Get("/expt/query1")
+  // async func2(): Promise<any>{
+  //   this.channelGroupFacade.getGroupRequestModel();
+  //   return null;
+  // }
 
   @Delete(':id')
-  deleteChannelGroup(@Param('id') pk: string): Promise<ResponseModel<ChannelGroupDto>>{
+  deleteGroup(@Param('id') pk: string): Promise<ResponseModel<ChannelGroupDto>>{
     try {
       console.log("Id is......" + pk);
           return this.channelGroupFacade.deleteById([parseInt(pk, 10)])
@@ -163,4 +182,5 @@ export class ChannelGroupRoutes{
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
+
 }

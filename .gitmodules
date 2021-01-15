@@ -4,3 +4,9 @@
 [submodule "submodules/platform-3.0-Entities"]
 	path = submodules/platform-3.0-Entities
 	url = https://github.com/smartupio/platform-3.0-Entities.git
+[submodule "submodules/platform-3.0-Dtos"]
+	path = submodules/platform-3.0-Dtos
+	url = https://github.com/smartupio/platform-3.0-Dtos.git
+[submodule "submodules/platform-3.0-AWS"]
+	path = submodules/platform-3.0-AWS
+	url = https://github.com/smartupio/platform-3.0-AWS.git

@@ -2,7 +2,7 @@ import { HttpService, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { LiveContentUserDto } from "../../submodules/platform-3.0-Dtos/liveContentUserDto";
 import { LiveContentUser } from "../../submodules/platform-3.0-Entities/liveContentUser";
-import AppService from "../../submodules/platform-3.0-Framework/AppService/AppService";
+import AppService from "../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/AppService/AppService";
 // import { LiveContentUserDto } from "app/smartup_dtos/liveContentUserDto";
 // import { LiveContentUser } from "app/smartup_entities/liveContentUser";
 // import AppService from "smartup_framework/AppService/AppService";

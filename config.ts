@@ -1,4 +1,5 @@
 import { DotenvConfigOutput, config } from 'dotenv';
+require('custom-env').env(true)
 
 const envFound: DotenvConfigOutput = config();
 
@@ -6,8 +7,9 @@ if (!envFound) {
   throw new Error('.env file was not found.');
 }
 
-export const NODE_ENV: any = String(process.env.NODE_ENV) || 'development';
+// export const NODE_ENV: any = String(process.env.NODE_ENV) || 'development';
 export const port: any = Number(process.env.port) || 3000;
+
 
 export const DATABASE_TYPE: any = String(process.env.DATABASE_TYPE) || 'postgres';
 export const DATABASE_USERNAME: any = String(process.env.DATABASE_USERNAME) || 'postgres';

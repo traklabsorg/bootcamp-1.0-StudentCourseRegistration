@@ -11,8 +11,6 @@ import { Plan } from 'submodules/platform-3.0-Entities/plan';
 import { User } from 'submodules/platform-3.0-Entities/user';
 import { UserMeetingProvider } from 'submodules/platform-3.0-Entities/userMeetingProvider';
 import { UserMeetingProviders_Meeting } from 'submodules/platform-3.0-Entities/userMeetingProviders_meeting';
-import { AuthenticationMiddleware } from 'submodules/platform-3.0-Framework/authentication.middleware';
-import { AuthorizationMiddleware } from 'submodules/platform-3.0-Framework/authorization.middleware';
 // import { TenantFacade } from './facade/communityFacade';
 // import { TenantRoutes } from './routes/communityRoutes';
 import { BusinessEvent } from 'submodules/platform-3.0-Entities/businessEvent';
@@ -57,6 +55,8 @@ import { LessonFacade } from './facade/lessonFacade';
 import { LiveContentUserFacade } from './facade/liveContentUserFacade';
 import { LiveContentFacade } from './facade/liveContentFacade';
 import { SectionFacade } from './facade/sectionFacade';
+import { AuthenticationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authentication.middleware';
+import { AuthorizationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authorization.middleware';
 // import { ChannelBillPlan } from './smartup_entities/channelBillPlan';
 // import { Channel } from './smartup_entities/channel';
 

@@ -4,7 +4,7 @@ import { Client, ClientKafka, MessagePattern } from '@nestjs/microservices';
 // import { GroupRoutes } from 'app/routes/groupRoutes';
 import { AppService } from './app.service';
 
-@Controller()
+@Controller("/")
 export class AppController{
   constructor(private readonly appService: AppService) {}
   // onModuleInit() {
@@ -16,7 +16,8 @@ export class AppController{
 
   
   @Get()
-  getHello(): string {
+  getHello(): any {
+    console.log("Inside hello......");
     return this.appService.getHello();
   }
 
