@@ -1,0 +1,6 @@
+[submodule "submodules/platform-3.0-Mappings"]
+	path = submodules/platform-3.0-Mappings
+	url = https://github.com/smartupio/platform-3.0-Mappings.git
+[submodule "submodules/platform-3.0-Entities"]
+	path = submodules/platform-3.0-Entities
+	url = https://github.com/smartupio/platform-3.0-Entities.git
