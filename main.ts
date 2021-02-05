@@ -10,9 +10,14 @@ const logger = new Logger();
 // let routes = new GroupRoutes();
 
 // import config from "./config";
+// import { NODE_ENV } from './config';
 require('dotenv').config();
 
 declare const module: any;
+
+if (process.env.NODE_ENV === "prod" || process.env.NODE_ENV === "dev") {
+  console.log = function () {};
+}
 
 const port =  process.env.port || 3000;
 async function bootstrap() {
