@@ -134,7 +134,8 @@ export class EnrolledMeetingRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.enrolled_meeting_children_array;
       }
-      requestModel.Children.unshift('enrolledMeeting');
+      if(requestModel.Children.indexOf('enrolledMeeting')<=-1)
+        requestModel.Children.unshift('enrolledMeeting');
       let result = await this.enrolledMeetingFacade.search(requestModel);
       return result;
     } catch (error) {

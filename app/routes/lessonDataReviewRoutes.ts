@@ -147,20 +147,29 @@ export class LessonDataReviewRoutes{
   async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
+      console.log("request headers is...."+JSON.stringify(req.headers['requestmodel']));
+      console.log(req.headers['requestmodel'].toString())
+      console.log("\n\n\n\nhere......",JSON.parse(req.headers['requestmodel'].toString()));
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      console.log("1");
       requestModel.Filter.PageInfo.PageSize = pageSize;
+      console.log("1");
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      console.log("1");
       let given_children_array = requestModel.Children;
+      console.log("1");
       let isSubset = given_children_array.every(val => this.lesson_data_review_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_data_review_children_array.filter(el => el === val).length);
       console.log("isSubset is......" + isSubset);
       if (!isSubset) {
-        console.log("Inside Condition.....")
+        console.log("Inside Condition.....");
         requestModel.Children = this.lesson_data_review_children_array;
       }
-      requestModel.Children.unshift('lessonDataReview');
+      if(requestModel.Children.indexOf('lessonDataReview')<=-1)
+        requestModel.Children.unshift('lessonDataReview');
       let result = await this.lessonDataReviewFacade.search(requestModel);
       return result;
     } catch (error) {
+      console.log("Error is....."+JSON.stringify(error));
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

@@ -157,7 +157,8 @@ export class LessonDataRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.lesson_data_children_array;
       }
-      requestModel.Children.unshift('lessonData');
+      if(requestModel.Children.indexOf('lessonData')<=-1)
+        requestModel.Children.unshift('lessonData');
       let result = await this.lessonDataFacade.search(requestModel);
       return result;
     } catch (error) {

@@ -9,6 +9,7 @@ import { GroupUser } from 'submodules/platform-3.0-Entities/groupUser';
 import { MeetingProvider } from 'submodules/platform-3.0-Entities/meetingProvider';
 import { Plan } from 'submodules/platform-3.0-Entities/plan';
 import { User } from 'submodules/platform-3.0-Entities/user';
+import { ChannelUser } from 'submodules/platform-3.0-Entities/channelUser'
 import { UserMeetingProvider } from 'submodules/platform-3.0-Entities/userMeetingProvider';
 import { UserMeetingProviders_Meeting } from 'submodules/platform-3.0-Entities/userMeetingProviders_meeting';
 // import { TenantFacade } from './facade/communityFacade';
@@ -41,8 +42,6 @@ import { LessonDataReviewRoutes } from './routes/lessonDataReviewRoutes';
 import { LessonDataRoutes } from './routes/lessonDataRoutes';
 import { LessonDataUserRoutes } from './routes/lessonDataUserRoutes';
 import { LessonRoutes } from './routes/lessonRoutes';
-import { LiveContentRoutes } from './routes/liveContentRoutes';
-import { LiveContentUserRoutes } from './routes/liveContentUserRoutes';
 import { SectionRoutes } from './routes/sectionRoutes';
 import { ChannelBillPlanFacade } from './facade/channelBillPlanFacade';
 import { ChannelGroupFacade } from './facade/channelGroupFacade';
@@ -52,20 +51,22 @@ import { LessonDataReviewFacade } from './facade/lessonDataReviewFacade';
 import { LessonDataFacade } from './facade/lessonDataFacade';
 import { LessonDataUserFacade } from './facade/lessonDataUserFacade';
 import { LessonFacade } from './facade/lessonFacade';
-import { LiveContentUserFacade } from './facade/liveContentUserFacade';
-import { LiveContentFacade } from './facade/liveContentFacade';
 import { SectionFacade } from './facade/sectionFacade';
 import { AuthenticationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authentication.middleware';
 import { AuthorizationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authorization.middleware';
 // import { ChannelBillPlan } from './smartup_entities/channelBillPlan';
 // import { Channel } from './smartup_entities/channel';
+import { SectionReview } from '../submodules/platform-3.0-Entities/sectionReview';
+import { ExampleService } from './facade/mailFacade';
+import { AuthController } from './routes/authController';
+import { AuthService } from './facade/authService';
 
 @Module({
   imports: [HttpModule,
-    TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder]),
+    TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview]),
   ],
-  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,LiveContentFacade,LiveContentUserFacade,SectionFacade],
-  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,LiveContentRoutes,LiveContentUserRoutes,SectionRoutes]
+  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,ExampleService,AuthService],
+  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,AuthController]
 })
 // export class  EntityModule{ }
 export class EntityModule implements NestModule {

@@ -168,7 +168,8 @@ export class ChannelRoutes implements OnModuleInit{
         console.log("Inside Condition.....")
         requestModel.Children = this.channel_children_array;
       }
-      requestModel.Children.unshift('channel');
+      if(requestModel.Children.indexOf('channel')<=-1)
+        requestModel.Children.unshift('channel');
       let result = await this.channelFacade.search(requestModel);
       return result;
     } catch (error) {

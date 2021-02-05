@@ -14,13 +14,14 @@ import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/p
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { ChannelBillPlanDto } from '../../submodules/platform-3.0-Dtos/channelBillPlanDto';
+import { ExampleService } from '../facade/mailFacade';
 
 
 
 @Controller('channelBillPlan')
 export class ChannelBillPlanRoutes{
 
-  constructor(private channelBillPlanFacade: ChannelBillPlanFacade) { }
+  constructor(private channelBillPlanFacade: ChannelBillPlanFacade,private example:ExampleService) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['CHANNELBILLPLAN_ADD','CHANNELBILLPLAN_UPDATE','CHANNELBILLPLAN_DELETE'];
@@ -159,7 +160,8 @@ export class ChannelBillPlanRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.channel_bill_plan_children_array;
       }
-      requestModel.Children.unshift('channelBillPlan');
+      if(requestModel.Children.indexOf('channelBillPlan')<=-1)
+        requestModel.Children.unshift('channelBillPlan');
       let result = await this.channelBillPlanFacade.search(requestModel);
       return result;
     } catch (error) {
@@ -207,6 +209,16 @@ export class ChannelBillPlanRoutes{
         } catch (error) {
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+  }
+
+  @Get('/a/b/c/d/e/f/g')
+  func():void{
+    try{
+    this.example.example();
+    }
+    catch(err){
+      console.log("Error is..."+JSON.stringify(err));
+    }
   }
 
 }

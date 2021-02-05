@@ -133,7 +133,8 @@ export class ChannelGroupRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.channel_group_children_array;
       }
-      requestModel.Children.unshift('channelGroup');
+      if(requestModel.Children.indexOf('channelGroup')<=-1)
+        requestModel.Children.unshift('channelGroup');
       let result = await this.channelGroupFacade.search(requestModel);
       return result;
     } catch (error) {

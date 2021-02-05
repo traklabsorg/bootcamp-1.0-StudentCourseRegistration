@@ -13,12 +13,13 @@ import { LessonDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { LessonDataReviewFacade } from '../facade/lessonDataReviewFacade';
 
 
 @Controller('lesson')
 export class LessonRoutes{
 
-  constructor(private lessonFacade: LessonFacade) { }
+  constructor(private lessonFacade: LessonFacade,private lessonDataReviewFacade:LessonDataReviewFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LESSON_ADD','LESSON_UPDATE','LESSON_DELETE'];
@@ -141,6 +142,50 @@ export class LessonRoutes{
     }
   }
 
+
+  @Get("/findAllCommunityLessons/:communityId")
+  async findLessons(@Param('communityId') id:string):Promise<ResponseModel<any>>{
+    try {
+      console.log("Id is......" + id);
+      let childrenArray = ["lesson","section","channel","community"]
+      let result  =  await this.lessonFacade.getChildrenIds(childrenArray,[parseInt(id, 10)])
+      let lessonIdArray = []
+      result.getDataCollection().forEach((entity:any)=>{
+        let myJSON = {}
+        myJSON["lessonId"] = entity.Id;
+        delete entity.section.channel;
+        lessonIdArray.push(entity);
+      })
+      result.setDataCollection(lessonIdArray);
+      return result;
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/findLessonReviewFacade/:communityId")
+  async findReviewStatus(@Param('communityId') id:string):Promise<any>
+  {
+    try{
+      let communityLessonIds :ResponseModel<any> = await this.findLessons(id);
+      console.log("communityLessonIds are....."+JSON.stringify(communityLessonIds));
+      let lesson_ids = [];
+      communityLessonIds.getDataCollection().forEach((json_id:any)=>{
+        console.log("\n\n\n\njson_ids are....."+JSON.stringify(json_id));
+        lesson_ids.push(json_id.Id);
+      })
+      let result = await this.lessonDataReviewFacade.checkLessonReviewStatus(lesson_ids);
+      
+      return result;
+      
+
+    }
+    catch(error){
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   
 
   @Get("/:pageSize/:pageNumber")
@@ -157,7 +202,8 @@ export class LessonRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.lesson_children_array;
       }
-      requestModel.Children.unshift('lesson');
+      if(requestModel.Children.indexOf('lesson')<=-1)
+        requestModel.Children.unshift('lesson');
       let result = await this.lessonFacade.search(requestModel);
       return result;
     } catch (error) {
@@ -206,5 +252,11 @@ export class LessonRoutes{
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
+
+
+  //  <---------------------------     CUSTOM APIS       ------------------------------->
+
+  
+
 
 }

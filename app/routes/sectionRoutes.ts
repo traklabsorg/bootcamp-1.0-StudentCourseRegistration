@@ -13,12 +13,14 @@ import { SectionDto } from '../../submodules/platform-3.0-Dtos/sectionDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { LessonFacade } from '../facade/lessonFacade';
+import { Condition } from '../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 
 
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private sectionFacade: SectionFacade) { }
+  constructor(private sectionFacade: SectionFacade, private lessonFacade:LessonFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
@@ -142,6 +144,50 @@ export class SectionRoutes{
   }
 
   
+  @Get("/findAllCommunitySections/:communityId")
+  async findSections(@Param('communityId') id:string):Promise<any>{
+    try {
+      console.log("Id is......" + id);
+      let childrenArray = ["section","channel","community"]
+      let result  =  await this.sectionFacade.getChildrenIds(childrenArray,[parseInt(id, 10)],"lesson")
+      let sectionIdArray = []
+      result.getDataCollection().forEach((entity:any)=>{
+        // let myJSON = {}
+        // myJSON["lessonId"] = entity.Id;
+        delete entity.channel;
+        // sectionIdArray.push(entity);
+        sectionIdArray.push(entity);
+      })
+      let newSectionIdArray = [];
+      
+      await Promise.all(sectionIdArray.map(async (entity:any)=>{
+        let requestModel:RequestModelQuery = new RequestModelQuery();
+        requestModel.Children = ["lesson"];
+        let condition = new Condition();
+        condition.FieldName = "sectionId";
+        condition.FieldValue = entity.Id;
+        requestModel.Filter.PageInfo.PageSize = 10000;
+        requestModel.Filter.PageInfo.PageNumber = 1;
+        requestModel.Filter.Conditions = [];
+        requestModel.Filter.Conditions.push(condition);
+        console.log("\n\n\n\n\n\n\n\nRequestModelQuery is........"+JSON.stringify(RequestModel)+"\n\n\n\n")
+        let lessonResult = await this.lessonFacade.search(requestModel);
+        // console.log("\n\n\n\n\nLesson Result is....."+JSON.stringify(lessonResult.getDataCollection())+"\n\n\n\n")
+        entity.lesson =  lessonResult.getDataCollection();
+        newSectionIdArray.push(entity);
+        // console.log("\n\n\n\n\n\nNow...new SectionId array is......."+JSON.stringify(newSectionIdArray)+"\n\n\n\n");
+        // console.log("\n\n\n\nNew Entity is....."+JSON.stringify(entity)+"\n\n\n\n")
+        result.setDataCollection(newSectionIdArray);
+
+      })
+      )
+      
+      return result;
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   @Get("/:pageSize/:pageNumber")
   async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
@@ -157,7 +203,8 @@ export class SectionRoutes{
         console.log("Inside Condition.....")
         requestModel.Children = this.section_children_array;
       }
-      requestModel.Children.unshift('section');
+      if(requestModel.Children.indexOf('section')<=-1)
+        requestModel.Children.unshift('section');
       let result = await this.sectionFacade.search(requestModel);
       return result;
     } catch (error) {

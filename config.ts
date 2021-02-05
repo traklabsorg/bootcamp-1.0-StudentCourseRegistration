@@ -34,3 +34,12 @@ export const AWS_ACCESS_KEY: string = String(process.env.AWS_ACCESS_KEY) || "AKI
 export const AWS_SECRET_ACCESS_KEY: string = String(process.env.AWS_SECRET_ACCESS_KEY) || "BWpselL6urfVr+ojwvtMPiHQMRN7+weT1MHWLssP";
 export const AWS_REGION: string = String(process.env.AWS_REGION) || "us-east-2";
 export const AWS_LOGGER_SQS_URL: string = String(process.env.AWS_LOGGER_SQS_URL) || "https://sqs.us-east-2.amazonaws.com/938510084600/smartup_dev_logs";
+
+
+
+export const MAIL_HOST :string = '127.0.0.1'
+export const MAIL_PORT:any = 3000
+export const MAIL_TLS :any = true
+export const MAIL_SECURE :any = false
+export const MAIL_USER :any = 'debabratamukherjee@trakinvest.com'
+export const MAIL_PASSWORD :any = 'B@b@i28101997'
