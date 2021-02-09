@@ -23,7 +23,7 @@ COPY . /usr/src/app
 
 # Building app
 #RUN npm run build
-RUN nest build
+# RUN nest build
 EXPOSE 3000
 
 # Running the app
