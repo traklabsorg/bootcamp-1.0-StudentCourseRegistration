@@ -41,5 +41,3 @@ export const MAIL_HOST :string = '127.0.0.1'
 export const MAIL_PORT:any = 3000
 export const MAIL_TLS :any = true
 export const MAIL_SECURE :any = false
-export const MAIL_USER :any = 'debabratamukherjee@trakinvest.com'
-export const MAIL_PASSWORD :any = 'B@b@i28101997'
