@@ -175,14 +175,67 @@ export class EnrolledMeetingRoutes{
   //   return null;
   // }
 
-  @Delete(':id')
-  deleteGroup(@Param('id') pk: string): Promise<ResponseModel<EnrolledMeetingDto>>{
+  @Delete('/')
+  deleteGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>>{
     try {
-      console.log("Id is......" + pk);
-          return this.enrolledMeetingFacade.deleteById([parseInt(pk, 10)])
+      let delete_ids :Array<number> = [];
+      body.DataCollection.forEach((entity:EnrolledMeetingDto)=>{
+        delete_ids.push(entity.Id);
+      })
+      console.log("Ids are......",delete_ids);
+      return this.enrolledMeetingFacade.deleteById(delete_ids);
         } catch (error) {
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
+
+  // @Get("/count/findRecord/all")
+  // async getCount(@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.communityFacade.getCountByConditions(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+
+  // @Get("/count/findRecord/one")
+  // async getTotalCount(@Req() req:Request):Promise<number> {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.communityFacade.getAllRecordsCount(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 
 }

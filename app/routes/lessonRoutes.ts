@@ -204,7 +204,33 @@ export class LessonRoutes{
       }
       if(requestModel.Children.indexOf('lesson')<=-1)
         requestModel.Children.unshift('lesson');
+      // requestModel.Children = ['lesson','lessonData']     // expt.....delete this line......
       let result = await this.lessonFacade.search(requestModel);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/findAllLessonRelatedDetailsWithAllReviewsByUserId/:pageSize/:pageNumber")
+  async findAllLessonRelatedDetailsWithAllReviewsByUserId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request){
+    try {
+      console.log("Inside findAllLessonRelatedDetailsWithAllReviewsByUserId ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      // requestModel.Children = ['lesson','lessonData']     // expt.....delete this line......
+      let entityArrays = [['lesson','lessonData'],['lessonData','lessonDataReview'],['lessonData','lessonDataUser']];
+      let result = await this.lessonFacade.findAllLessonRelatedDetailsWithAllReviewsByUserId(requestModel,entityArrays)
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -243,15 +269,68 @@ export class LessonRoutes{
   //   return null;
   // }
 
-  @Delete(':id')
-  deleteGroup(@Param('id') pk: string): Promise<ResponseModel<LessonDto>>{
+  @Delete('/')
+  deleteGroup(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>>{
     try {
-      console.log("Id is......" + pk);
-          return this.lessonFacade.deleteById([parseInt(pk, 10)])
+      let delete_ids :Array<number> = [];
+      body.DataCollection.forEach((entity:LessonDto)=>{
+        delete_ids.push(entity.Id);
+      })
+      console.log("Ids are......",delete_ids);
+      return this.lessonFacade.deleteById(delete_ids);
         } catch (error) {
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
+
+  // @Get("/count/findRecord/all")
+  // async getCount(@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.communityFacade.getCountByConditions(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+
+  // @Get("/count/findRecord/one")
+  // async getTotalCount(@Req() req:Request):Promise<number> {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.communityFacade.getAllRecordsCount(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 
 
   //  <---------------------------     CUSTOM APIS       ------------------------------->

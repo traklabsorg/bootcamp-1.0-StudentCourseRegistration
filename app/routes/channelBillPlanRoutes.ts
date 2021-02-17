@@ -14,14 +14,14 @@ import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/p
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { ChannelBillPlanDto } from '../../submodules/platform-3.0-Dtos/channelBillPlanDto';
-import { ExampleService } from '../facade/mailFacade';
+// import { ExampleService } from '../facade/mailFacade';
 
 
 
 @Controller('channelBillPlan')
 export class ChannelBillPlanRoutes{
 
-  constructor(private channelBillPlanFacade: ChannelBillPlanFacade,private example:ExampleService) { }
+  constructor(private channelBillPlanFacade: ChannelBillPlanFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['CHANNELBILLPLAN_ADD','CHANNELBILLPLAN_UPDATE','CHANNELBILLPLAN_DELETE'];
@@ -201,24 +201,77 @@ export class ChannelBillPlanRoutes{
   //   return null;
   // }
 
-  @Delete(':id')
-  deleteChannelBillPlan(@Param('id') pk: string): Promise<ResponseModel<ChannelBillPlanDto>>{
+  @Delete('/')
+  deleteChannelBillPlan(@Body() body:RequestModel<ChannelBillPlanDto>): Promise<ResponseModel<ChannelBillPlanDto>>{
     try {
-      console.log("Id is......" + pk);
-          return this.channelBillPlanFacade.deleteById([parseInt(pk, 10)])
+      let delete_ids :Array<number> = [];
+      body.DataCollection.forEach((entity:ChannelBillPlanDto)=>{
+        delete_ids.push(entity.Id);
+      })
+      console.log("Ids are......",delete_ids);
+      return this.channelBillPlanFacade.deleteById(delete_ids);
         } catch (error) {
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
   }
 
-  @Get('/a/b/c/d/e/f/g')
-  func():void{
-    try{
-    this.example.example();
-    }
-    catch(err){
-      console.log("Error is..."+JSON.stringify(err));
-    }
-  }
+  // @Get("/count/findRecord/all")
+  // async getCount(@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.channelBillPlanFacade.getCountByConditions(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+
+  // @Get("/count/findRecord/one")
+  // async getTotalCount(@Req() req:Request):Promise<number> {
+  //   try {
+  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if ( !isSubset || given_children_array.length==0) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.community_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('community')<=-1)
+  //       requestModel.Children.unshift('community');
+  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+  //     var result = await this.communityFacade.getAllRecordsCount(requestModel);
+  //     // let result = await this.groupUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     console.log("Error is....." + JSON.stringify(error));
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+  // @Get('/a/b/c/d/e/f/g')
+  // func():void{
+  //   try{
+  //   this.example.example();
+  //   }
+  //   catch(err){
+  //     console.log("Error is..."+JSON.stringify(err));
+  //   }
+  // }
 
 }

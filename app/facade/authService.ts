@@ -10,7 +10,7 @@ import { Injectable, HttpException, HttpStatus, HttpService } from '@nestjs/comm
 // import { ForgottenPassword } from './interfaces/forgottenpassword.interface';
 // import { ConsentRegistry } from './interfaces/consentregistry.interface';
 // import { InjectModel } from '@nestjs/mongoose';
-import { MAIL_HOST, MAIL_PORT, MAIL_SECURE, MAIL_USER, MAIL_PASSWORD } from '../../config';
+import { MAIL_HOST, MAIL_PORT, MAIL_SECURE } from '../../config';
 
 
 @Injectable()
@@ -139,8 +139,8 @@ export class AuthService {
         });
     
         let mailOptions = {
-          from: '"Company" <' + MAIL_USER + '>', 
-          to: "debabratamukherjee97@gmail.com", // list of receivers (separated by ,)
+          from: '"Company" <' + testAccount.user + '>', 
+          to: "lobigiv254@wirese.com", // list of receivers (separated by ,)
           subject: 'Verify Email', 
           text: 'Verify Email', 
           html: 'Hi! <br><br> Thanks for your registration<br><br>'
@@ -152,6 +152,7 @@ export class AuthService {
                 console.log('Message sent error: %s', error);
                 return reject(false);
               }
+              console.log("Infi is....."+JSON.stringify(info))
               console.log('Message sent normal: %s', info.messageId);
               resolve(true);
           });      

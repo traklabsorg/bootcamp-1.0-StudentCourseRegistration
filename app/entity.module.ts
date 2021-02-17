@@ -57,7 +57,7 @@ import { AuthorizationMiddleware } from 'submodules/platform-3.0-Entities/submod
 // import { ChannelBillPlan } from './smartup_entities/channelBillPlan';
 // import { Channel } from './smartup_entities/channel';
 import { SectionReview } from '../submodules/platform-3.0-Entities/sectionReview';
-import { ExampleService } from './facade/mailFacade';
+// import { ExampleService } from './facade/mailFacade';
 import { AuthController } from './routes/authController';
 import { AuthService } from './facade/authService';
 
@@ -65,7 +65,7 @@ import { AuthService } from './facade/authService';
   imports: [HttpModule,
     TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview]),
   ],
-  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,ExampleService,AuthService],
+  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,AuthService],
   controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,AuthController]
 })
 // export class  EntityModule{ }
