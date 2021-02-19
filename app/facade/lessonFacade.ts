@@ -48,8 +48,7 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
               })
             }
       
-            queryField = await queryField.where(":id = ANY("
-            +entityArrays[0][0]+".collaborators)", { id: userId })
+            queryField = await queryField.where(":id =  any(lesson.collaborators)", { id: userId })
             queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
             let result:any = await queryField.getMany();
 
