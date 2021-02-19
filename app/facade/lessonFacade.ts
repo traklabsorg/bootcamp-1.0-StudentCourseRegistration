@@ -68,6 +68,11 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
           }
     }
 
+    async findMaxId():Promise<Lesson>{
+      const max_lesson_database_id = this.genericRepository.findOne({select: ['Id'], order: {Id: "DESC"} });
+      return max_lesson_database_id;
+    }
+
 
     // const results = await getRepository(Members)
     // .createQueryBuilder("member") // you shall assign an alias

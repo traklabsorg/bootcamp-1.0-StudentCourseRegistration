@@ -45,7 +45,7 @@ export class EnrolledMeetingRoutes{
   //               break;
   //             case 'ENROLLEDMEETING_UPDATE':
   //               console.log("Inside ENROLLEDMEETING_UPDATE Topic");
-  //             //  responseModelOfGroupDto = this.updateEnrolledMeeting(result["message"]);
+  //              responseModelOfGroupDto = this.updateEnrolledMeeting(result["message"]);
   //               break;
   //             case 'ENROLLEDMEETING_DELETE':
   //               console.log("Inside ENROLLEDMEETING_DELETE Topic");
@@ -85,7 +85,7 @@ export class EnrolledMeetingRoutes{
   @Get("/")
   allProducts() {
     try {
-      console.log("Inside controller ......group");
+      console.log("Inside controller ......enrolledMeeting");
       return this.enrolledMeetingFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -144,7 +144,7 @@ export class EnrolledMeetingRoutes{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createEnrolledMeeting(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.enrolledMeetingFacade.create(body);
@@ -159,7 +159,7 @@ export class EnrolledMeetingRoutes{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateEnrolledMeeting(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>> {  //requiestmodel<EnrolledMeetingDto></EnrolledMeetingDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.enrolledMeetingFacade.updateEntity(body);
@@ -176,7 +176,7 @@ export class EnrolledMeetingRoutes{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>>{
+  deleteEnrolledMeeting(@Body() body:RequestModel<EnrolledMeetingDto>): Promise<ResponseModel<EnrolledMeetingDto>>{
     try {
       let delete_ids :Array<number> = [];
       body.DataCollection.forEach((entity:EnrolledMeetingDto)=>{

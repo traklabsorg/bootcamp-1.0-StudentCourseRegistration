@@ -47,39 +47,39 @@ export class ChannelRoutes implements OnModuleInit{
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<ChannelDto> = null;
+            let responseModelOfChannelDto: ResponseModel<ChannelDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
-              case 'GROUP_ADD':
-                console.log("Inside Group_ADD Topic");
-                responseModelOfGroupDto = await this.createGroup(result["message"]);
+              case 'CHANNEL_ADD':
+                console.log("Inside CHANNEL_ADD Topic");
+                responseModelOfChannelDto = await this.createChannel(result["message"]);
                 break;
-              case 'GROUP_UPDATE':
-                console.log("Inside Group_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateGroup(result["message"]);
+              case 'CHANNEL_UPDATE':
+                console.log("Inside CHANNEL_UPDATE Topic");
+               responseModelOfChannelDto = await this.updateChannel(result["message"]);
                 break;
-              case 'GROUP_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteGroup(result["message"]);
+              case 'CHANNEL_DELETE':
+                console.log("Inside CHANNEL_DELETE Topic");
+                responseModelOfChannelDto = await this.deleteChannel(result["message"]);
                 break;
   
             }
   
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<ChannelDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "Group Inserted Successfully", null));
+            let requestModelOfChannelDto: RequestModel<ChannelDto> = result["message"];
+            responseModelOfChannelDto.setSocketId(requestModelOfChannelDto.SocketId)
+            responseModelOfChannelDto.setCommunityUrl(requestModelOfChannelDto.CommunityUrl);
+            responseModelOfChannelDto.setRequestId(requestModelOfChannelDto.RequestGuid);
+            responseModelOfChannelDto.setStatus(new Message("200", "Group Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.channelFacade.create(result["message"]);
+            // let responseModelOfChannelDto = this.channelFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
+            // result["message"].DataCollection = responseModelOfChannelDto.DataCollection;
             //this.creategroup(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfChannelDto)
             }
           }
           catch (error) {
@@ -178,7 +178,7 @@ export class ChannelRoutes implements OnModuleInit{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>> {  //requiestmodel<ChannelDto></ChannelDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createChannel(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>> {  //requiestmodel<ChannelDto></ChannelDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.channelFacade.create(body);
@@ -193,7 +193,7 @@ export class ChannelRoutes implements OnModuleInit{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>> {  //requiestmodel<ChannelDto></ChannelDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateChannel(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>> {  //requiestmodel<ChannelDto></ChannelDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.channelFacade.updateEntity(body);
@@ -210,7 +210,7 @@ export class ChannelRoutes implements OnModuleInit{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>>{
+  deleteChannel(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>>{
     try {
       let delete_ids :Array<number> = [];
       body.DataCollection.forEach((entity:ChannelDto)=>{

@@ -39,39 +39,39 @@ export class ChannelBillPlanRoutes{
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<ChannelBillPlanDto> = null;
+            let responseModelOfChannleBillPlanDto: ResponseModel<ChannelBillPlanDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
               case 'CHANNELBILLPLAN_ADD':
                 console.log("Inside CHANNELBILLPLAN_ADD Topic");
-                responseModelOfGroupDto = await this.createChannelBillPlan(result["message"]);
+                responseModelOfChannleBillPlanDto = await this.createChannelBillPlan(result["message"]);
                 break;
               case 'CHANNELBILLPLAN_UPDATE':
                 console.log("Inside CHANNELBILLPLAN_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateChannelBillPlan(result["message"]);
+               responseModelOfChannleBillPlanDto = await this.updateChannelBillPlan(result["message"]);
                 break;
               case 'CHANNELBILLPLAN_DELETE':
                 console.log("Inside CHANNELBILLPLAN_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteChannelBillPlan(result["message"]);
+                responseModelOfChannleBillPlanDto = await this.deleteChannelBillPlan(result["message"]);
                 break;
   
             }
   
-            console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<ChannelBillPlanDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "ChannelBillPlan Inserted Successfully", null));
+            console.log("Result of aws of channelBillPlanRoutes  is...." + JSON.stringify(result));
+            let requestModelOfChannleBillPlanDto: RequestModel<ChannelBillPlanDto> = result["message"];
+            responseModelOfChannleBillPlanDto.setSocketId(requestModelOfChannleBillPlanDto.SocketId)
+            responseModelOfChannleBillPlanDto.setCommunityUrl(requestModelOfChannleBillPlanDto.CommunityUrl);
+            responseModelOfChannleBillPlanDto.setRequestId(requestModelOfChannleBillPlanDto.RequestGuid);
+            responseModelOfChannleBillPlanDto.setStatus(new Message("200", "ChannelBillPlan Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.channelBillPlanFacade.create(result["message"]);
+            // let responseModelOfChannleBillPlanDto = this.channelBillPlanFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
+            // result["message"].DataCollection = responseModelOfChannleBillPlanDto.DataCollection;
             //this.createChannelBillPlan(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfChannleBillPlanDto)
             }
           }
           catch (error) {

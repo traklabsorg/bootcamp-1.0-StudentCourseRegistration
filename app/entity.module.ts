@@ -60,13 +60,15 @@ import { SectionReview } from '../submodules/platform-3.0-Entities/sectionReview
 // import { ExampleService } from './facade/mailFacade';
 import { AuthController } from './routes/authController';
 import { AuthService } from './facade/authService';
+import { SectionReviewFacade } from './facade/sectionReviewFacade';
+import { SectionReviewRoutes } from './routes/sectionReviewRoutes';
 
 @Module({
   imports: [HttpModule,
     TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview]),
   ],
-  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,AuthService],
-  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,AuthController]
+  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,SectionReviewFacade,AuthService],
+  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,SectionReviewRoutes,AuthController]
 })
 // export class  EntityModule{ }
 export class EntityModule implements NestModule {

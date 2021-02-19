@@ -36,39 +36,39 @@ export class LessonDataRoutes{
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<LessonDataDto> = null;
+            let responseModelOfLessonDataDto: ResponseModel<LessonDataDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
-              case 'GROUP_ADD':
-                console.log("Inside Group_ADD Topic");
-                responseModelOfGroupDto = await this.createGroup(result["message"]);
+              case 'LESSONDATA_ADD':
+                console.log("Inside LESSONDATA_ADD Topic");
+                responseModelOfLessonDataDto = await this.createLessonData(result["message"]);
                 break;
-              case 'GROUP_UPDATE':
-                console.log("Inside Group_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateGroup(result["message"]);
+              case 'LESSONDATA_UPDATE':
+                console.log("Inside LESSONDATA_UPDATE Topic");
+               responseModelOfLessonDataDto = await this.updateLessonData(result["message"]);
                 break;
-              case 'GROUP_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteGroup(result["message"]);
+              case 'LESSONDATA_DELETE':
+                console.log("Inside LESSONDATA_DELETE Topic");
+                responseModelOfLessonDataDto = await this.deleteLessonData(result["message"]);
                 break;
   
             }
   
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<LessonDataDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "Group Inserted Successfully", null));
+            let requestModelOfLessonDataDto: RequestModel<LessonDataDto> = result["message"];
+            responseModelOfLessonDataDto.setSocketId(requestModelOfLessonDataDto.SocketId)
+            responseModelOfLessonDataDto.setCommunityUrl(requestModelOfLessonDataDto.CommunityUrl);
+            responseModelOfLessonDataDto.setRequestId(requestModelOfLessonDataDto.RequestGuid);
+            responseModelOfLessonDataDto.setStatus(new Message("200", "Group Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.lessonDataFacade.create(result["message"]);
+            // let responseModelOfLessonDataDto = this.lessonDataFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
-            //this.creategroup(result["message"])
+            // result["message"].DataCollection = responseModelOfLessonDataDto.DataCollection;
+            //this.createLessonData(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfLessonDataDto)
             }
           }
           catch (error) {
@@ -100,7 +100,7 @@ export class LessonDataRoutes{
     
   //   console.log(JSON.stringify(payload.body) + ' created');
   //   this.client.emit<any>('success', 'Message received by handleEntityCreated SuccessFully' + JSON.stringify(payload['value']))
-  //   // this.creategroup(payload);
+  //   // this.createLessonData(payload);
   //   return true;
   // }
 
@@ -108,7 +108,7 @@ export class LessonDataRoutes{
   @Get("/")
   allProducts() {
     try {
-      console.log("Inside controller ......group");
+      console.log("Inside controller ......lessonData");
       return this.lessonDataFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -167,7 +167,7 @@ export class LessonDataRoutes{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.lessonDataFacade.create(body);
@@ -182,7 +182,7 @@ export class LessonDataRoutes{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.lessonDataFacade.updateEntity(body);
@@ -199,7 +199,7 @@ export class LessonDataRoutes{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>>{
+  deleteLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>>{
     try {
       let delete_ids :Array<number> = [];
       body.DataCollection.forEach((entity:LessonDataDto)=>{

@@ -38,39 +38,39 @@ export class SectionRoutes{
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<SectionDto> = null;
+            let responseModelOfSectionDto: ResponseModel<SectionDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
               case 'SECTION_ADD':
                 console.log("Inside SECTION_ADD Topic");
-                responseModelOfGroupDto = await this.createGroup(result["message"]);
+                responseModelOfSectionDto = await this.createSection(result["message"]);
                 break;
               case 'SECTION_UPDATE':
-                console.log("Inside Group_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateGroup(result["message"]);
+                console.log("Inside SECTION_UPDATE Topic");
+               responseModelOfSectionDto = await this.updateSection(result["message"]);
                 break;
               case 'SECTION_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteGroup(result["message"]);
+                console.log("Inside SECTION_DELETE Topic");
+                responseModelOfSectionDto = await this.deleteSection(result["message"]);
                 break;
   
             }
   
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<SectionDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "Group Inserted Successfully", null));
+            let requestModelOfSectionDto: RequestModel<SectionDto> = result["message"];
+            responseModelOfSectionDto.setSocketId(requestModelOfSectionDto.SocketId)
+            responseModelOfSectionDto.setCommunityUrl(requestModelOfSectionDto.CommunityUrl);
+            responseModelOfSectionDto.setRequestId(requestModelOfSectionDto.RequestGuid);
+            responseModelOfSectionDto.setStatus(new Message("200", "Group Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.sectionFacade.create(result["message"]);
+            // let responseModelOfSectionDto = this.sectionFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
-            //this.creategroup(result["message"])
+            // result["message"].DataCollection = responseModelOfSectionDto.DataCollection;
+            //this.createSection(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfSectionDto)
             }
           }
           catch (error) {
@@ -102,7 +102,7 @@ export class SectionRoutes{
     
   //   console.log(JSON.stringify(payload.body) + ' created');
   //   this.client.emit<any>('success', 'Message received by handleEntityCreated SuccessFully' + JSON.stringify(payload['value']))
-  //   // this.creategroup(payload);
+  //   // this.createSection(payload);
   //   return true;
   // }
 
@@ -144,22 +144,37 @@ export class SectionRoutes{
   }
 
   @Get("/findAllLessonRelatedDetailsWithAllReviewsBySectionId/:pageSize/:pageNumber")
-  async findFunc(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+  async findAllLessonRelatedDetailsWithAllReviewsBySectionId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+    try {
+      console.log("Inside controller12345 ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      // let given_children_array = requestModel.Children;
+      // let isSubset = given_children_array.every(val => this.section_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.section_children_array;
+      // }
+      // if(requestModel.Children.indexOf('section')<=-1)
+      //   requestModel.Children.unshift('section');
+      let custom_section_children_array = [['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/findAllLessonRelatedDetailsWithAllReviewsByUserIdAsCreator/:pageSize/:pageNumber")
+  async findAllLessonRelatedDetailsWithAllReviewsByUserIdAsCreator(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
-      let given_children_array = requestModel.Children;
-      let isSubset = given_children_array.every(val => this.section_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_children_array.filter(el => el === val).length);
-      console.log("isSubset is......" + isSubset);
-      if (!isSubset) {
-        console.log("Inside Condition.....")
-        requestModel.Children = this.section_children_array;
-      }
-      if(requestModel.Children.indexOf('section')<=-1)
-        requestModel.Children.unshift('section');
-      let custom_section_children_array = [['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let custom_section_children_array = [['section','lesson'],['section','sectionReview'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
       return result;
     } catch (error) {
@@ -243,7 +258,7 @@ export class SectionRoutes{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createSection(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.sectionFacade.create(body);
@@ -258,7 +273,7 @@ export class SectionRoutes{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateSection(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.sectionFacade.updateEntity(body);
@@ -275,7 +290,7 @@ export class SectionRoutes{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>>{
+  deleteSection(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>>{
     try {
       let delete_ids :Array<number> = [];
       body.DataCollection.forEach((entity:SectionDto)=>{

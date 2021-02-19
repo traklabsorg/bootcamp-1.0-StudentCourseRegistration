@@ -36,39 +36,39 @@ export class LessonDataReviewRoutes{
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<LessonDataReviewDto> = null;
+            let responseModelOfLessonDataReviewDto: ResponseModel<LessonDataReviewDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
-              case 'GROUP_ADD':
-                console.log("Inside Group_ADD Topic");
-                responseModelOfGroupDto = await this.createGroup(result["message"]);
+              case 'LESSONDATAREVIEW_ADD':
+                console.log("Inside LESSONDATAREVIEW_ADD Topic");
+                responseModelOfLessonDataReviewDto = await this.createLessonDataReview(result["message"]);
                 break;
-              case 'GROUP_UPDATE':
-                console.log("Inside Group_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateGroup(result["message"]);
+              case 'LESSONDATAREVIEW_UPDATE':
+                console.log("Inside LESSONDATAREVIEW_UPDATE Topic");
+               responseModelOfLessonDataReviewDto = await this.updateLessonDataReview(result["message"]);
                 break;
-              case 'GROUP_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteGroup(result["message"]);
+              case 'LESSONDATAREVIEW_DELETE':
+                console.log("Inside LESSONDATAREVIEW_DELETE Topic");
+                responseModelOfLessonDataReviewDto = await this.deleteLessonDataReview(result["message"]);
                 break;
   
             }
   
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<LessonDataReviewDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "Group Inserted Successfully", null));
+            let requestModelOfLessonDataReviewDto: RequestModel<LessonDataReviewDto> = result["message"];
+            responseModelOfLessonDataReviewDto.setSocketId(requestModelOfLessonDataReviewDto.SocketId)
+            responseModelOfLessonDataReviewDto.setCommunityUrl(requestModelOfLessonDataReviewDto.CommunityUrl);
+            responseModelOfLessonDataReviewDto.setRequestId(requestModelOfLessonDataReviewDto.RequestGuid);
+            responseModelOfLessonDataReviewDto.setStatus(new Message("200", "LeesonDataReview Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.lessonDataReviewFacade.create(result["message"]);
+            // let responseModelOfLessonDataReviewDto = this.lessonDataReviewFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
+            // result["message"].DataCollection = responseModelOfLessonDataReviewDto.DataCollection;
             //this.creategroup(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfLessonDataReviewDto)
             }
           }
           catch (error) {
@@ -175,7 +175,7 @@ export class LessonDataReviewRoutes{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.lessonDataReviewFacade.create(body);
@@ -190,7 +190,7 @@ export class LessonDataReviewRoutes{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.lessonDataReviewFacade.updateEntity(body);
@@ -207,7 +207,7 @@ export class LessonDataReviewRoutes{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>>{
+  deleteLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>>{
     try {
       let delete_ids :Array<number> = [];
       body.DataCollection.forEach((entity:LessonDataReviewDto)=>{

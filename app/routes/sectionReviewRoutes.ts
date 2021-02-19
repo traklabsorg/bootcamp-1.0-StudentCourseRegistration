@@ -1,30 +1,29 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Injectable, Param, Patch, Post, Put, Req } from '@nestjs/common';
-// import { LessonDataUserDto } from 'app/smartup_dtos/LessonDataUserDto';
+// import { SectionReviewDto } from 'app/smartup_dtos/SectionReviewDto';
 // import { Tenant } from 'app/smartup_entities/tenant';
-import { LessonDataUserFacade } from 'app/facade/lessonDataUserFacade';
+import { SectionReviewFacade } from 'app/facade/sectionReviewFacade';
 import { plainToClass } from 'class-transformer';
 // import { RequestModel } from ''submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
-import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
-// let dto_maps = require('../smartup_dtos/LessonDataUserDto')
+// let dto_maps = require('../smartup_dtos/SectionReviewDto')
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
-import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDataUserDto } from '../../submodules/platform-3.0-Dtos/lessonDataUserDto';
-import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
-import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
+// import { SectionReviewDto } from '../../submodules/platform-3.0-Dtos/sectionReviewDto';
+import { SectionReviewDto } from '../../submodules/platform-3.0-Dtos/sectionReviewDto';
+import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
+import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 
 
-@Controller('lessonDataUser')
-export class LessonDataUserRoutes{
+@Controller('sectionReview')
+export class SectionReviewRoutes{
 
-  constructor(private lessonDataUserFacade: LessonDataUserFacade) { }
+  constructor(private sectionReviewFacade: SectionReviewFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
-  private topicArray = ['LESSONDATAUSER_ADD','LESSONDATAUSER_UPDATE','LESSONDATAUSER_DELETE'];
+  private topicArray = ['SECTIONREVIEW_ADD','SECTIONREVIEW_UPDATE','SECTIONREVIEW_DELETE'];
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
-
-  private lesson_data_user_children_array = ["channel","lessonData"];
+  private section_review_children_array = ["user","section"];
   
   onModuleInit() {
     // const requestPatterns = [
@@ -32,72 +31,62 @@ export class LessonDataUserRoutes{
     // ];
     for (var i = 0; i < this.topicArray.length; i++) {
       this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
-        let value = this.topicArray[i];
+        var value = this.topicArray[i];
         return async (result) => {
-          await console.log("Result is........" + result);
+          await console.log("Result is........" + JSON.stringify(result));
           try {
-            let responseModelOfLessonDataUserDto: ResponseModel<LessonDataUserDto> = null;
+            let responseModelOfSectionReviewDto: any = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
-              case 'LESSONDATAUSER_ADD':
-                console.log("Inside LESSONDATAUSER_ADD Topic");
-                responseModelOfLessonDataUserDto = await this.createLessonDataUser(result["message"]);
+              case 'SECTIONREVIEW_ADD':
+                console.log("Inside SECTIONREVIEW_ADD Topic");
+                responseModelOfSectionReviewDto = this.createSectionReview(result["message"]);
                 break;
-              case 'LESSONDATAUSER_UPDATE':
-                console.log("Inside LESSONDATAUSER_UPDATE Topic");
-               responseModelOfLessonDataUserDto = await this.updateLessonDataUser(result["message"]);
+              case 'SECTIONREVIEW_UPDATE':
+                console.log("Inside SECTIONREVIEW_UPDATE Topic");
+               responseModelOfSectionReviewDto = this.updateSectionReview(result["message"]);
                 break;
-              case 'LESSONDATAUSER_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfLessonDataUserDto = await this.deleteLessonDataUser(result["message"]);
+              case 'SECTIONREVIEW_DELETE':
+                console.log("Inside SECTIONREVIEW_DELETE Topic");
+                responseModelOfSectionReviewDto = this.deleteSectionReview(result["message"]);
                 break;
   
             }
   
-            console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfLessonDataUserDto: RequestModel<LessonDataUserDto> = result["message"];
-            responseModelOfLessonDataUserDto.setSocketId(requestModelOfLessonDataUserDto.SocketId)
-            responseModelOfLessonDataUserDto.setCommunityUrl(requestModelOfLessonDataUserDto.CommunityUrl);
-            responseModelOfLessonDataUserDto.setRequestId(requestModelOfLessonDataUserDto.RequestGuid);
-            responseModelOfLessonDataUserDto.setStatus(new Message("200", "LessonDataUser Inserted Successfully", null));
-
-            // let responseModelOfLessonDataUserDto = this.groupFacade.create(result["message"]);
-
-            // result["message"].DataCollection = responseModelOfLessonDataUserDto.DataCollection;
+            console.log("Result of aws  is...." + JSON.stringify(result));
+            // let responseModelOfSectionReviewDto = this.userFacade.create(result["message"]);
+  
             //this.creategroup(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfLessonDataUserDto)
+              this.sns_sqs.publishMessageToTopic(element, result)
             }
           }
           catch (error) {
-            console.log("Inside Catch.........");
-            console.log(error, result);
+            await console.log("Inside Catch.........");
+            await console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<LessonDataUserDto> = new ResponseModel<LessonDataUserDto>(null,null,null,null,null,null,null,null,null);
-              errorResult.setStatus(new Message("500",error,null))
-              
-
-              this.sns_sqs.publishMessageToTopic(element, errorResult);
+              this.sns_sqs.publishMessageToTopic(element, result);
             }
+            
           }
         }
       })())
     }
 
+
+
     
     
-    // requestPatterns.forEach(pattern => {
-    //   this.client.subscribeToResponseOf(pattern);
-    // });
   }
+
   @Get("/")
   allProducts() {
     try {
       console.log("Inside controller ......group");
-      return this.lessonDataUserFacade.getAll();
+      return this.sectionReviewFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -110,7 +99,7 @@ export class LessonDataUserRoutes{
   //     console.log("Inside controller ......group");
   //     console.log("RequestModel is......" + JSON.stringify(req.headers['requestmodel']));
   //     let requestModel: any = JSON.parse(req.headers['requestmodel'].toString());
-  //     let result = await this.lessonDataUserFacade.search(requestModel);
+  //     let result = await this.sectionReviewFacade.search(requestModel);
   //     return result;
   //   } catch (error) {
   //     console.log("Error is....." + error);
@@ -120,10 +109,10 @@ export class LessonDataUserRoutes{
 
 
   @Get(':id')
-  getAllProductsByIds(@Param('id') id: number): Promise<ResponseModel<LessonDataUserDto>> {
+  getAllProductsByIds(@Param('id') id: number): Promise<ResponseModel<SectionReviewDto>> {
     try {
       console.log("id is............." + JSON.stringify(id));
-      return this.lessonDataUserFacade.getByIds([id]);
+      return this.sectionReviewFacade.getByIds([id]);
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -139,15 +128,15 @@ export class LessonDataUserRoutes{
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let given_children_array = requestModel.Children;
-      let isSubset = given_children_array.every(val => this.lesson_data_user_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_data_user_children_array.filter(el => el === val).length);
+      let isSubset = given_children_array.every(val => this.section_review_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_review_children_array.filter(el => el === val).length);
       console.log("isSubset is......" + isSubset);
       if (!isSubset) {
         console.log("Inside Condition.....")
-        requestModel.Children = this.lesson_data_user_children_array;
+        requestModel.Children = this.section_review_children_array;
       }
-      if(requestModel.Children.indexOf('lessonDataUser')<=-1)
-        requestModel.Children.unshift('lessonDataUser');
-      let result = await this.lessonDataUserFacade.search(requestModel);
+      if(requestModel.Children.indexOf('sectionReview')<=-1)
+        requestModel.Children.unshift('sectionReview');
+      let result = await this.sectionReviewFacade.search(requestModel);
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -155,10 +144,10 @@ export class LessonDataUserRoutes{
   }
 
   @Post("/") 
-  async createLessonDataUser(@Body() body:RequestModel<LessonDataUserDto>): Promise<ResponseModel<LessonDataUserDto>> {  //requiestmodel<LessonDataUserDto></LessonDataUserDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createSectionReview(@Body() body:RequestModel<SectionReviewDto>): Promise<ResponseModel<SectionReviewDto>> {  //requiestmodel<SectionReviewDto></SectionReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      let result = await this.lessonDataUserFacade.create(body);
+      let result = await this.sectionReviewFacade.create(body);
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
@@ -170,10 +159,10 @@ export class LessonDataUserRoutes{
   }
 
   @Put("/")
-  async updateLessonDataUser(@Body() body:RequestModel<LessonDataUserDto>): Promise<ResponseModel<LessonDataUserDto>> {  //requiestmodel<LessonDataUserDto></LessonDataUserDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateSectionReview(@Body() body:RequestModel<SectionReviewDto>): Promise<ResponseModel<SectionReviewDto>> {  //requiestmodel<SectionReviewDto></SectionReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.lessonDataUserFacade.updateEntity(body);
+      return await this.sectionReviewFacade.updateEntity(body);
     } catch (error) {
       await console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -182,19 +171,19 @@ export class LessonDataUserRoutes{
 
   // @Get("/expt/query1")
   // async func2(): Promise<any>{
-  //   this.lessonDataUserFacade.getGroupRequestModel();
+  //   this.sectionReviewFacade.getGroupRequestModel();
   //   return null;
   // }
 
   @Delete('/')
-  deleteLessonDataUser(@Body() body:RequestModel<LessonDataUserDto>): Promise<ResponseModel<LessonDataUserDto>>{
+  deleteSectionReview(@Body() body:RequestModel<SectionReviewDto>): Promise<ResponseModel<SectionReviewDto>>{
     try {
       let delete_ids :Array<number> = [];
-      body.DataCollection.forEach((entity:LessonDataUserDto)=>{
+      body.DataCollection.forEach((entity:SectionReviewDto)=>{
         delete_ids.push(entity.Id);
       })
       console.log("Ids are......",delete_ids);
-      return this.lessonDataUserFacade.deleteById(delete_ids);
+      return this.sectionReviewFacade.deleteById(delete_ids);
         } catch (error) {
           throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }

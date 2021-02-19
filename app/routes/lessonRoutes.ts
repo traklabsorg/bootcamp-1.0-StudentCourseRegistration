@@ -26,50 +26,52 @@ export class LessonRoutes{
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
 
   private lesson_children_array = ["section"];
+
   
-  onModuleInit() {
+  async onModuleInit() {
     // const requestPatterns = [
     //   'group-create'
     // ];
+    // this.maxLessonDatabaseId = await (await this.lessonFacade.findMaxId()).Id
     for (var i = 0; i < this.topicArray.length; i++) {
       this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
         let value = this.topicArray[i];
         return async (result) => {
           await console.log("Result is........" + result);
           try {
-            let responseModelOfGroupDto: ResponseModel<LessonDto> = null;
+            let responseModelOfLessonDto: ResponseModel<LessonDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
-              case 'GROUP_ADD':
-                console.log("Inside Group_ADD Topic");
-                responseModelOfGroupDto = await this.createGroup(result["message"]);
+              case 'LESSON_ADD':
+                console.log("Inside LESSON_ADD Topic");
+                responseModelOfLessonDto = await this.createLesson(result["message"]);
                 break;
-              case 'GROUP_UPDATE':
-                console.log("Inside Group_UPDATE Topic");
-               responseModelOfGroupDto = await this.updateGroup(result["message"]);
+              case 'LESSON_UPDATE':
+                console.log("Inside LESSON_UPDATE Topic");
+               responseModelOfLessonDto = await this.updateLesson(result["message"]);
                 break;
-              case 'GROUP_DELETE':
-                console.log("Inside Group_DELETE Topic");
-                responseModelOfGroupDto = await this.deleteGroup(result["message"]);
+              case 'LESSON_DELETE':
+                console.log("Inside LESSON_DELETE Topic");
+                responseModelOfLessonDto = await this.deleteLesson(result["message"]);
                 break;
   
             }
   
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
-            let requestModelOfGroupDto: RequestModel<LessonDto> = result["message"];
-            responseModelOfGroupDto.setSocketId(requestModelOfGroupDto.SocketId)
-            responseModelOfGroupDto.setCommunityUrl(requestModelOfGroupDto.CommunityUrl);
-            responseModelOfGroupDto.setRequestId(requestModelOfGroupDto.RequestGuid);
-            responseModelOfGroupDto.setStatus(new Message("200", "Group Inserted Successfully", null));
+            let requestModelOfLessonDto: RequestModel<LessonDto> = result["message"];
+            responseModelOfLessonDto.setSocketId(requestModelOfLessonDto.SocketId)
+            responseModelOfLessonDto.setCommunityUrl(requestModelOfLessonDto.CommunityUrl);
+            responseModelOfLessonDto.setRequestId(requestModelOfLessonDto.RequestGuid);
+            responseModelOfLessonDto.setStatus(new Message("200", "Group Inserted Successfully", null));
 
-            // let responseModelOfGroupDto = this.lessonFacade.create(result["message"]);
+            // let responseModelOfLessonDto = this.lessonFacade.create(result["message"]);
 
-            // result["message"].DataCollection = responseModelOfGroupDto.DataCollection;
+            // result["message"].DataCollection = responseModelOfLessonDto.DataCollection;
             //this.creategroup(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, responseModelOfGroupDto)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfLessonDto)
             }
           }
           catch (error) {
@@ -109,7 +111,7 @@ export class LessonRoutes{
   @Get("/")
   allProducts() {
     try {
-      console.log("Inside controller ......group");
+      console.log("Inside controller ......lesson");
       return this.lessonFacade.getAll();
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -238,10 +240,31 @@ export class LessonRoutes{
   }
 
   @Post("/") 
-  async createGroup(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createLesson(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      body.DataCollection.forEach((entity:LessonDto)=>{
+        if(entity.CreatedBy == 0 || typeof(entity.CreatedBy) == 'undefined'){
+          throw "Please Insert Valid CreatedBy Field for Lesson..."+JSON.stringify(entity);
+        }
+        if(typeof(entity.collaborators)=='undefined')
+        {
+          if(entity.CreatedBy != 0 && entity.CreatedBy != null){
+            entity.collaborators = [entity.CreatedBy];
+          }
+        }
+        else if (entity.collaborators == null){
+          entity.collaborators = [entity.CreatedBy];
+        }
+        else if(entity.collaborators.includes(entity.CreatedBy) == false){
+          entity.collaborators.push(entity.CreatedBy);
+        }
+        
+
+      })
       let result = await this.lessonFacade.create(body);
+      
+      // result.getDataCollection()[0].collaborators = [result.getDataCollection()[0].Id];
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
@@ -253,7 +276,7 @@ export class LessonRoutes{
   }
 
   @Put("/")
-  async updateGroup(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateLesson(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.lessonFacade.updateEntity(body);
@@ -270,10 +293,12 @@ export class LessonRoutes{
   // }
 
   @Delete('/')
-  deleteGroup(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>>{
+  deleteLesson(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>>{
     try {
       let delete_ids :Array<number> = [];
+      let inputMaxLessonDatabaseId = 0;
       body.DataCollection.forEach((entity:LessonDto)=>{
+        inputMaxLessonDatabaseId = Math.max(entity.Id,inputMaxLessonDatabaseId);
         delete_ids.push(entity.Id);
       })
       console.log("Ids are......",delete_ids);
