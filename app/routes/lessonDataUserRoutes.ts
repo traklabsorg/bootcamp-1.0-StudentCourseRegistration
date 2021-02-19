@@ -24,7 +24,7 @@ export class LessonDataUserRoutes{
   private topicArray = ['LESSONDATAUSER_ADD','LESSONDATAUSER_UPDATE','LESSONDATAUSER_DELETE'];
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
 
-  private lesson_data_user_children_array = ["channel","lessonData"];
+  private lesson_data_user_children_array = ["user","lessonData"];
   
   onModuleInit() {
     // const requestPatterns = [
