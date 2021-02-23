@@ -10,6 +10,8 @@ import { Repository } from "typeorm";
 import { ResponseModel } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel";
 import { ServiceOperationResultType } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType";
 import { RequestModelQuery } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery";
+import { GROUP_MICROSERVICE_URI } from "config";
+import { map } from "rxjs/operators";
 let dto = require('../../submodules/platform-3.0-Mappings/channelMapper')
 
 @Injectable()
@@ -63,7 +65,7 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             //     })
             // })
             let unpublishedLessonIds = [];
-            let publishedLessonIds = [];
+            let publishedLessonCreatorIds = [];
             
             for(let i=0;i<result.length;i++){
                 // console.log("\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n")
@@ -101,15 +103,17 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
                                 break
                         }
                         if(flag==false){
-                            console.log("Now Deleting.....",sample_section.lesson,k)
+                            console.log("ahdwchuehwdehudehudwhuehuehuweehuw")
+                            console.log("Now Deleting.....",k,sample_section.lesson[k])
                             // delete result[i];
                             unpublishedLessonIds.push(k)
-                            delete sample_section.lesson
+                            delete sample_section.lesson[k]
                             // console.log("Finally Evaluated False........",i)
             
                             }
                             else{
-                                publishedLessonIds.push(k);
+                                console.log("\n\n\n\nPushing to published Lesson ids .......",sample_section.lesson[k],"\n\n\n\n\n\n")
+                                publishedLessonCreatorIds.push(sample_section.lesson[k].CreatedBy);
                                 console.log("Finally Evaluated True........",i)
                             }
                     }
@@ -123,14 +127,14 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
 
                 // }
                 // else{
-                //     publishedLessonIds.push(i);
+                //     publishedLessonCreatorIds.push(i);
                 //     console.log("Finally Evaluated True........",i)
                 // }
             }
-            unpublishedLessonIds.forEach((id:number)=>{
-                console.log("\n\nresult to be deleted.....",result,"\n\n\n\n");
-                delete result.channel.section.lesson[id];
-            })
+            // unpublishedLessonIds.forEach((id:number)=>{
+            //     console.log("\n\nresult to be deleted.....",result,"\n\n\n\n");
+            //     delete result.channel.section.lesson[id];
+            // })
 
             let final_result: ResponseModel<ChannelDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
             console.log("Setting result......")
@@ -138,6 +142,9 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             // console.log("Final_result is......" + JSON.stringify(final_result));
             
             // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+            console.log("\n\n\n\nPublished lessonIds Created by are..............",publishedLessonCreatorIds,"\n\n\n\\n");
+            var publishedUniqueLessonCreatorIds = publishedLessonCreatorIds.filter((v, i, a) => a.indexOf(v) === i);
+            console.log("\n\n\n\nPublished lessonIds Created by are..............",publishedUniqueLessonCreatorIds,"\n\n\n\\n");
             return final_result;
       
           }
@@ -146,6 +153,26 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             throw err;
           }
     }
+
+
+      getUserWithDetails(communityUrl: string): any{
+    
+const headersRequest = {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic `+communityUrl,
+  };
+  let requestModel:RequestModelQuery;
+  requestModel.Children = []
+    console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/user/1000/1");
+    return this.http.get(GROUP_MICROSERVICE_URI + "/user/1000/1",{ headers: headersRequest })
+      .pipe(
+        map(response => {
+          response.data
+        })
+      )
+   
+}
+  
     
     
 }
