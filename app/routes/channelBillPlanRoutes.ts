@@ -79,7 +79,7 @@ export class ChannelBillPlanRoutes{
             console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<ChannelBillPlanDto>;
+              let errorResult: ResponseModel<ChannelBillPlanDto> = new ResponseModel<ChannelBillPlanDto>(null,null,null,null,null,null,null,null,null);
               errorResult.setStatus(new Message("500",error,null))
               
 

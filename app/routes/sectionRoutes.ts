@@ -78,7 +78,7 @@ export class SectionRoutes{
             console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<SectionDto>;
+              let errorResult: ResponseModel<SectionDto> = new ResponseModel<SectionDto>(null,null,null,null,null,null,null,null,null);
               errorResult.setStatus(new Message("500",error,null))
               
 

@@ -76,7 +76,7 @@ export class LessonDataRoutes{
             console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<LessonDataDto>;
+              let errorResult: ResponseModel<LessonDataDto> = new ResponseModel<LessonDataDto>(null,null,null,null,null,null,null,null,null);;
               errorResult.setStatus(new Message("500",error,null))
               
 

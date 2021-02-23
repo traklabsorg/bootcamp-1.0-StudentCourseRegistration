@@ -87,7 +87,7 @@ export class ChannelRoutes implements OnModuleInit{
             console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<ChannelDto>;
+              let errorResult: ResponseModel<ChannelDto> = new ResponseModel<ChannelDto>(null,null,null,null,null,null,null,null,null);
               errorResult.setStatus(new Message("500",error,null))
               
 
@@ -147,6 +147,22 @@ export class ChannelRoutes implements OnModuleInit{
     try {
       console.log("id is............." + JSON.stringify(id));
       return this.channelFacade.getByIds([id]);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/findAllPublishedLessonRelatedDetailsWithAllReviewsByChannelId/:pageSize/:pageNumber")
+  async findAllPublishedLessonRelatedDetailsWithAllReviewsByChannelId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+    try {
+      console.log("Inside findAllPublishedLessonRelatedDetailsWithAllReviewsByChannelId ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let custom_section_children_array = [['channel','section'],['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let result = await this.channelFacade.findAllPublishedLessonRelatedDetailsWithAllReviewsByChannelId(requestModel,custom_section_children_array);
+      // if result.getDataCollection().forEach(())
+      return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

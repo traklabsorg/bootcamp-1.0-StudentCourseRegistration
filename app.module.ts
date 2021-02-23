@@ -73,7 +73,6 @@ import { join } from 'path';
         password: DATABASE_PASSWORD,
         port:DATABASE_PORT,
         database: DATABASE_NAME,
-        subscribers: [ GenericSubscriber ],
         cli: {
           migrationsDir: 'app/migration'
         },

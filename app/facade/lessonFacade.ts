@@ -44,7 +44,7 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
       
             if (entityArrays!= null) {
               entityArrays.forEach((entityArray:Array<string>)=>{
-                queryField = queryField.innerJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
+                queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
               })
             }
       
@@ -52,8 +52,8 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
             queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
             let result:any = await queryField.getMany();
 
-            let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
-            console.log("Setting result......")
+            let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+            console.log("Setting result......");
             await final_result.setDataCollection(result);
             console.log("Final_result is......" + JSON.stringify(final_result));
             
