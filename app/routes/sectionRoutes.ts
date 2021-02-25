@@ -15,12 +15,13 @@ import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platfo
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { LessonFacade } from '../facade/lessonFacade';
 import { Condition } from '../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+import { UtilityFacade } from '../facade/utilityFacade';
 
 
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private sectionFacade: SectionFacade, private lessonFacade:LessonFacade) { }
+  constructor(private sectionFacade: SectionFacade, private lessonFacade:LessonFacade,private utilityFacade:UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
@@ -157,10 +158,11 @@ export class SectionRoutes{
       //   console.log("Inside Condition.....")
       //   requestModel.Children = this.section_children_array;
       // }
-      // if(requestModel.Children.indexOf('section')<=-1)
-      //   requestModel.Children.unshift('section');
+      if(requestModel.Children.indexOf('section')<=-1)
+        requestModel.Children.unshift('section');
       let custom_section_children_array = [['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
+      result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result);
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -174,8 +176,12 @@ export class SectionRoutes{
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      if(requestModel.Children.indexOf('section')<=-1)
+        requestModel.Children.unshift('section');
       let custom_section_children_array = [['section','lesson'],['section','sectionReview'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
+      result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result);
+      // console.log("Result from assignIsPublishedFieldsToSectionAndLesson  is....",result[0]);
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

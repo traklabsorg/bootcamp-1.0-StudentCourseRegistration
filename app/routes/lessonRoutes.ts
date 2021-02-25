@@ -14,6 +14,7 @@ import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/p
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { LessonDataReviewFacade } from '../facade/lessonDataReviewFacade';
+import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 
 
 @Controller('lesson')
@@ -188,6 +189,37 @@ export class LessonRoutes{
     }
   }
 
+
+  @Get("/findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId/:pageSize/:pageNumber")
+  async findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+    try {
+      console.log("Inside findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        if(condition.FieldName == "userId"){
+          condition.FieldName = "lessonDataUser.userId";
+        }
+      })
+      // let given_children_array = requestModel.Children;
+      // let isSubset = given_children_array.every(val => this.section_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.section_children_array;
+      // }
+      requestModel.Children = ['lesson']
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      let custom_lesson_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let result = await this.lessonFacade.search(requestModel,true,custom_lesson_children_array);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   
 
   @Get("/:pageSize/:pageNumber")
@@ -230,7 +262,6 @@ export class LessonRoutes{
       // }
       // if(requestModel.Children.indexOf('lesson')<=-1)
       //   requestModel.Children.unshift('lesson');
-      // requestModel.Children = ['lesson','lessonData']     // expt.....delete this line......
       let entityArrays = [['lesson','lessonData'],['lessonData','lessonDataReview'],['lessonData','lessonDataUser']];
       let result = await this.lessonFacade.findAllLessonRelatedDetailsWithAllReviewsByUserId(requestModel,entityArrays)
       return result;
@@ -238,6 +269,8 @@ export class LessonRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
 
   @Post("/") 
   async createLesson(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]

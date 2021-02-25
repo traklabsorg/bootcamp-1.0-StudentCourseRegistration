@@ -161,7 +161,9 @@ export class ChannelRoutes implements OnModuleInit{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let custom_section_children_array = [['channel','section'],['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.channelFacade.findAllPublishedLessonRelatedDetailsWithAllReviewsByChannelId(requestModel,custom_section_children_array);
+      // result.getDataCollection()
       // if result.getDataCollection().forEach(())
+      console.log("Route result...",result);
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

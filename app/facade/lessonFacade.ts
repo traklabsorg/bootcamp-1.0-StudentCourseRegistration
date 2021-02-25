@@ -55,7 +55,7 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
             let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
             console.log("Setting result......");
             await final_result.setDataCollection(result);
-            console.log("Final_result is......" + JSON.stringify(final_result));
+            // console.log("Final_result is......" + JSON.stringify(final_result));
             
             console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
             return final_result;
@@ -66,6 +66,9 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
             throw err;
           }
     }
+
+
+
 
     async findMaxId():Promise<Lesson>{
       const max_lesson_database_id = this.genericRepository.findOne({select: ['Id'], order: {Id: "DESC"} });
