@@ -15,9 +15,9 @@ require('dotenv').config();
 
 declare const module: any;
 
-// if (process.env.NODE_ENV === "prod" || process.env.NODE_ENV === "dev") {
-//   console.log = function () {};
-// }
+if (process.env.NODE_ENV === "prod" || process.env.NODE_ENV === "dev") {
+  console.log = function () {};
+}
 
 const port =  process.env.port || 3000;
 async function bootstrap() {
