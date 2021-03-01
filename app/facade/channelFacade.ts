@@ -126,7 +126,7 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             let userDetails = await this.utilityFacade.getUserDetails(publishedUniqueLessonCreatorIds);
             // console.log("userdetails are....",userDetails.DataCollection);
             console.log(result);
-            result.push(userDetails.DataCollection);
+            result.push(userDetails.getDataCollection());
             console.log("\n\n\n\n\n\nAt the end...result is...",result,'\n\n\n\n\n\n\n\n\n');
             let final_result: ResponseModel<any> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
             console.log("Setting result......")

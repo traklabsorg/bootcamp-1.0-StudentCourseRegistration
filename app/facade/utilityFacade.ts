@@ -12,6 +12,8 @@ import { GROUP_MICROSERVICE_URI } from "config";
 import { map } from "rxjs/operators";
 import { Filter } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/filter";
 import { Condition } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/condition";
+import { ConditionalOperation } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/conditionOperation";
+import { UserDto } from '../../submodules/platform-3.0-Dtos/userDto';
 let dto = require("../../submodules/platform-3.0-Mappings/communityMapper");
 
 @Injectable()
@@ -21,10 +23,15 @@ export class UtilityFacade {
 
   }
 
+   onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+
     async getUserDetails(userIds:number[]): Promise<any>{
 
         if(userIds.length==0 || userIds == [null]){
-            return [];
+            let responseModel : ResponseModel<UserDto> = new ResponseModel(null,[],null,"200","No User Results to Be returned",null,null,null,null);
+
         }
     
   let requestModel = new RequestModelQuery();
@@ -32,33 +39,32 @@ export class UtilityFacade {
   let filter = new Filter();
   filter.Conditions = [];
   userIds.forEach((id:number)=>{
-    let myJSON = {}
     let condition = new Condition();
     condition.FieldName = "Id";
     condition.FieldValue = id;
-    condition.ConditionalSymbol = 2;
+    condition.ConditionalSymbol = ConditionalOperation.Or;
     filter.Conditions.push(condition);
   })
   requestModel.Filter = filter;
 
 
-  console.log("\n\n\n\nRequestModel Finally generated is.....",JSON.stringify(requestModel),"\n\n\n\n")
+//   console.log("\n\n\n\nRequestModel Finally generated is.....",JSON.stringify(requestModel),"\n\n\n\n")
   const headersRequest = {
     'requestmodel':JSON.stringify(requestModel)
 };
-    console.log("Inside Tenant Id......uri is....." + GROUP_MICROSERVICE_URI + "/user/1000/1");
+    console.log("Getting UserDetails from GroupMicroservice Uri......uri is....." + GROUP_MICROSERVICE_URI + "/user/1000/1");
     let httpResponse =  await this.http.get(GROUP_MICROSERVICE_URI+"/user/1000/1",{ headers: headersRequest }).toPromise();
       return httpResponse.data;
    
 }
 
-    async assignIsPublishedFieldsToSectionAndLesson(result:any):Promise<any>{
+    async assignIsPublishedFieldsToSectionAndLesson(result:any,findUserDeatils?:boolean):Promise<any>{
         let publishedLessonCreatorIds = [];
         console.log("\n\n\n\n\n\n\n\n\n\n\n\nBefore assignIsPublishedFieldsToSectionAndLesson....result is...",result,"\n\n\n\n\n\n\n\n\n\n\n\n\n")    
         
             for(let j = 0;j<result.DataCollection.length;j++){
                 let sample_section = result.DataCollection[j];
-                console.log("Sample Section is......",sample_section)
+                // console.log("Sample Section is......",sample_section)
                 let isSectionPublishedFlag = true;
                 for (let k = 0;k< sample_section.lesson.length;k++){
                     let sample_lesson = sample_section.lesson[k];
@@ -97,9 +103,34 @@ export class UtilityFacade {
                 
             }
             // })
-        
+         publishedLessonCreatorIds = publishedLessonCreatorIds.filter(this.onlyUnique);
         console.log("Published lesson Creator ids are.....",publishedLessonCreatorIds)
-        console.log("Result getting returned is.....",result)
+        // let requestModel : RequestModelQuery = new RequestModelQuery();
+        // requestModel.Children = [];
+        // requestModel.Filter.Conditions = [];
+        // publishedLessonCreatorIds.forEach((id:number)=>{
+        //     let condition:Condition = new Condition();
+        //     condition.FieldName = "Id";
+        //     condition.FieldValue = id;
+        //     condition.ConditionalSymbol = ConditionalOperation.Or;
+        //     requestModel.Filter.Conditions.push(condition);
+        // })
+        
+        console.log("Result getting returned is.....",result);
+        if(findUserDeatils == true){
+            let userDetails = await this.getUserDetails(publishedLessonCreatorIds);
+
+            console.log("Userdetails......",userDetails);
+            // console.log("result is.......",result);
+
+            // let myJSON = {};
+            // myJSON["userDetails"] = userDetails.DataCollection
+            // result.DataCollection.push(myJSON);
+            result.DataCollection.push(userDetails.DataCollection);
+            console.log("Final TResult to be returned is....",result);
+            return result
+        }
+        
         return result;
     }
     

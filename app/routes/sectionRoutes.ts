@@ -162,7 +162,8 @@ export class SectionRoutes{
         requestModel.Children.unshift('section');
       let custom_section_children_array = [['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
-      result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result);
+      result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result,true);
+      
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
