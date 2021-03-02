@@ -213,6 +213,12 @@ export class ChannelGroupRoutes{
     }
   }
 
+  // @Get("/a/b/c/d/e")
+  // async func(){
+  //   let result1 = await this.channelGroupFacade.findAllUsersInAGroupSubscribedToAChannel([1,2,3,4,5,6,7,8,9,10]);
+  //   return result1;
+  // }
+
 
   // @Get("/count/findRecord/one")
   // async getTotalCount(@Req() req:Request):Promise<number> {

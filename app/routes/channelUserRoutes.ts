@@ -13,6 +13,9 @@ import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { json } from 'body-parser';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { Condition } from 'submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/condition';
+import { ConditionalOperation } from 'submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/conditionOperation';
+import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 // let dto_maps = require('../smartup_dtos/channelUserDto')
 var objectMapper = require('object-mapper');
 
@@ -21,7 +24,7 @@ export class ChannelUserRoutes implements OnModuleInit{
 
   
 
-  constructor(private channelUserFacade: ChannelUserFacade) { }
+  constructor(private channelUserFacade: ChannelUserFacade,private channelGroupFacade:ChannelGroupFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['CHANNELUSER_ADD','CHANNELUSER_UPDATE','CHANNELUSER_DELETE'];
@@ -176,6 +179,58 @@ export class ChannelUserRoutes implements OnModuleInit{
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+
+  @Get("/count/findAllMemberCountOfAParticularChannel/all")
+  async func(@Req() req:Request){
+    let requestModel1: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+    let channelIds = [];
+    requestModel1.Filter.Conditions.forEach((condition:Condition)=>{
+      if(condition.FieldName == "channelId"){
+        channelIds.push(condition.FieldValue);
+      }
+    })
+    let requestModel:RequestModelQuery = new RequestModelQuery();
+    requestModel.Children = ["channelUser"];
+    requestModel.Filter.Conditions = [];
+    channelIds.forEach((id:number)=>{
+      let condition:Condition = new Condition();
+      condition.FieldName = "channelId";
+      condition.FieldValue = id;
+      condition.ConditionalSymbol = ConditionalOperation.Or;
+      requestModel.Filter.Conditions.push(condition);
+      
+    })
+    requestModel.Filter.OrderByField = "channelUser.channelId";
+    let result1 = await this.channelUserFacade.getCountByConditions(requestModel)
+    console.log("result1....",result1);
+    let result2 = await this.channelGroupFacade.findAllUsersInAGroupSubscribedToAChannel(channelIds);
+    console.log("result2....",result2);
+    var dict = [];
+    result1.forEach((res:any)=>{
+      var dict1 = {};
+      dict1["channelId"] = res["channelUser_channel_id"];
+      dict1["count_temp"] = res["count_temp"];
+      dict.push(dict1);
+    })
+    result2.forEach((res:any)=>{
+      let flag = false;
+      for(let i = 0;i<dict.length;i++){
+        if(dict[i]["channelId"] == res["channelGroup_channel_id"]){
+          flag = true;
+          dict[i]["count_temp"] = (parseInt(dict[i]["count_temp"])+parseInt(res["count_temp"])).toString();
+          break;
+        }
+      }
+      if(flag==false){
+        var dict1 = {};
+        dict1["channelId"] = res["channelGroup_channel_id"];
+        dict1["count_temp"] = res["count_temp"];
+        dict.push(dict1);
+      }
+    })
+    return dict;
   }
 
   @Post("/") 

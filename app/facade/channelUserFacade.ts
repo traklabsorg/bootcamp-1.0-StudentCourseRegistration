@@ -24,4 +24,9 @@ export class ChannelUserFacade extends AppService<ChannelUser, ChannelUserDto> {
         // super(channelUserRepository, ChannelUser, {}, {}, {}, {});
         
     }
+
+
+    
+
+
 }
