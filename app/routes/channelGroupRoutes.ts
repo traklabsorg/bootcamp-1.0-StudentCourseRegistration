@@ -15,6 +15,7 @@ import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/p
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+let mapperDto = require('../../submodules/platform-3.0-Mappings/channelGroupMapper');
 
 
 @Controller('channelGroup')
@@ -140,32 +141,159 @@ export class ChannelGroupRoutes{
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let isSubset = given_children_array.every(val => this.channel_group_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.channel_group_children_array.filter(el => el === val).length);
+      console.log("isSubset is......" + isSubset);
+      if (!isSubset) {
+        console.log("Inside Condition.....")
+        requestModel.Children = this.channel_group_children_array;
+      }
+      if(requestModel.Children.indexOf('channelUser')<=-1)
+        requestModel.Children.unshift('channelUser');
+      let result = await this.channelGroupFacade.search(requestModel);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @Get("/findAllChannelGroupOfAParticularChannel/:pageSize/:pageNumber")
+  async func1(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+    try {
+      console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
       let communityId,channelId,groupId;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
-        switch(condition.FieldName){
-          case "CommunityId":
+        console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
+        switch(condition.FieldName.toLowerCase()){
+          case "communityid":
             communityId = condition.FieldValue
             break 
-          case "groupId":
+          case "groupid":
             groupId = condition.FieldValue
             break 
-          case "channelId":
+          case "channelid":
             channelId = condition.FieldValue
             break 
         }
       })
-      requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
-        let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
-        dataCollection.push(final_result);
+      // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
+      //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      //   dataCollection.push(final_result);
+      // })
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result_updated = []
+      // dataCollection.push(final_result);
+      final_result.forEach((entity:any)=>{
+        entity = objectMapper(entity,mapperDto.channelGroupBasedOnChannelMapper)
+        final_result_updated.push(entity)
       })
-      result.setDataCollection(dataCollection);
+      result.setDataCollection(final_result_updated);
+      
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
     } catch (error) {
-      await console.log("Error is....." + error);
+      console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get("/getPublishedSectionLessonWithUserProgress/:pageSize/:pageNumber")
+  async getPublishedSectionLessonWithUserProgress(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber:number,@Req() req:Request){
+    try{
+      console.log("Inside Controller ......group by pageSize & pageNumber");
+      let requestModel:RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
+      let dataCollection = [];
+      let communityId,channelId,userId;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        console.log("condition is......",condition);
+        switch(condition.FieldName.toLowerCase()){
+          case "communityid":
+            communityId = condition.FieldValue;
+            break ;
+          case "channelid":
+            channelId = condition.FieldValue;
+            break;
+          case "userid":
+            userId = condition.FieldValue;
+            break;
+        }
+      })
+      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_user_progress(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result_updated = [];
+      finalResult.forEach((entity:any)=>{
+        final_result_updated.push(entity);
+      })
+      result.setDataCollection(final_result_updated);
+      return result;
+    }
+    catch(error){
+      console.log("Error is..................",error);
+      throw new HttpException(error,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
+  @Get("/findAllManagedContentOfAParticularChannel/:pageSize/:pageNumber")
+  async findAllManagedContentOfAParticularChannel(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+    try {
+      console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
+      let dataCollection = [];
+      let communityId,channelId,userId,type,publicationType;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
+        switch(condition.FieldName.toLowerCase()){
+          case "communityid":
+            communityId = condition.FieldValue
+            break 
+          case "userid":
+            userId = condition.FieldValue
+            break 
+          case "channelid":
+            channelId = condition.FieldValue
+            break 
+          case "type":
+            type = condition.FieldValue
+          case "publicationtype":
+            publicationType = condition.FieldValue
+          
+        }
+      })
+
+      // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
+      //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      //   dataCollection.push(final_result);
+      // })
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},${channelId},${userId},${type},${publicationType},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result_updated = []
+      // dataCollection.push(final_result);
+      final_result.forEach((entity:any)=>{
+        // entity = objectMapper(entity,mapperDto.managedContentBasedOnChannelMapper)
+        final_result_updated.push(entity)
+      })
+      result.setDataCollection(final_result_updated);
+      
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
+    } catch (error) {
+      console.log("Error is....." + error);
       // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

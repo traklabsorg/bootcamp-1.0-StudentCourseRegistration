@@ -17,6 +17,7 @@ import { LessonDataReviewFacade } from '../facade/lessonDataReviewFacade';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 import { LessonDataDto } from 'submodules/platform-3.0-Dtos/lessonDataDto';
 import { LessonDataUserDto } from 'submodules/platform-3.0-Dtos/lessonDataUserDto';
+let mapperDto = require('../../submodules/platform-3.0-Mappings/lessonMapper');
 
 
 @Controller('lesson')
@@ -302,6 +303,7 @@ export class LessonRoutes{
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let communityId:number,channelId:number;
+      let finalResult:ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
 
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         switch(condition.FieldName){
@@ -315,7 +317,13 @@ export class LessonRoutes{
 
       })
       let result = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_learners(${communityId}, ${channelId}, ${requestModel.Filter.PageInfo.PageNumber}, ${requestModel.Filter.PageInfo.PageSize})`);
-      return result;
+      let final_result_updated = [];
+      result.forEach((entity:any)=>{
+        entity = objectMapper(entity,mapperDto.lessonBasedOnChannelMapper)
+        final_result_updated.push(entity)
+      })
+      finalResult.setDataCollection(final_result_updated)
+      return finalResult;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

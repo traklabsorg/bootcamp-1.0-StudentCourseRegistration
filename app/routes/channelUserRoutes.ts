@@ -294,8 +294,8 @@ export class ChannelUserRoutes implements OnModuleInit{
         final_result_updated.push(entity)
       })
       // final_result = objectMapper(final_result,mapperDto.channelUserBasedOnChannelMapper)
-      dataCollection.push(final_result_updated)
-      result.setDataCollection(dataCollection);
+      // dataCollection.push(final_result_updated)
+      result.setDataCollection(final_result_updated);
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
@@ -328,7 +328,7 @@ export class ChannelUserRoutes implements OnModuleInit{
       let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
       let dataCollection = []
       body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
-        let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},${dto.channelUserAdditionalDetails})`);
+        let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},${JSON.stringify(dto.channelUserAdditionalDetails)})`);
         dataCollection.push(final_result);
       })
       result.setDataCollection(dataCollection);
