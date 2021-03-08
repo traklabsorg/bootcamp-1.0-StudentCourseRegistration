@@ -15,6 +15,8 @@ import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platfo
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { LessonDataReviewFacade } from '../facade/lessonDataReviewFacade';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+import { LessonDataDto } from 'submodules/platform-3.0-Dtos/lessonDataDto';
+import { LessonDataUserDto } from 'submodules/platform-3.0-Dtos/lessonDataUserDto';
 
 
 @Controller('lesson')
@@ -197,11 +199,18 @@ export class LessonRoutes{
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let conditions: Condition[] = requestModel.Filter.Conditions;
+      let userId:number;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
-        if(condition.FieldName == "userId"){
-          condition.FieldName = "lessonDataUser.userId";
-        }
+        if(condition.FieldName == 'userId')
+        userId = condition.FieldValue;
       })
+      conditions = conditions.filter((condition: Condition) => {
+        return condition.FieldName !== "userId";
+      });
+      requestModel.Filter.Conditions = conditions;
+      // console.log("Final requestModel is......",JSON.stringify(requestModel));
+      console.log("UserId is...........",userId);
       // let given_children_array = requestModel.Children;
       // let isSubset = given_children_array.every(val => this.section_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_children_array.filter(el => el === val).length);
       // console.log("isSubset is......" + isSubset);
@@ -214,6 +223,20 @@ export class LessonRoutes{
       //   requestModel.Children.unshift('lesson');
       let custom_lesson_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.lessonFacade.search(requestModel,true,custom_lesson_children_array);
+
+      await Promise.all(result.getDataCollection().map(async (lesson:LessonDto)=>{
+        await Promise.all(lesson.lessonData.map((lessonData:LessonDataDto)=>{
+          let modifiedLessonDataUserArray = [];
+          for(let i = 0;i<lessonData.lessonDataUser.length;i++){
+            if(lessonData.lessonDataUser[i].userId == userId){
+              console.log("To be inserted lessondataUser is.....",lessonData.lessonDataUser[i])
+              modifiedLessonDataUserArray.push(lessonData.lessonDataUser[i])
+            }
+          }
+          lessonData.lessonDataUser = modifiedLessonDataUserArray;
+        }))
+      }))
+
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -264,6 +287,34 @@ export class LessonRoutes{
       //   requestModel.Children.unshift('lesson');
       let entityArrays = [['lesson','lessonData'],['lessonData','lessonDataReview'],['lessonData','lessonDataUser']];
       let result = await this.lessonFacade.findAllLessonRelatedDetailsWithAllReviewsByUserId(requestModel,entityArrays)
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @Get('/getTopLearners/:pageSize/:pageNumber')
+  async getTopLearnersByChannnelId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+    try {
+      console.log("Inside getTopLearnersByChannnelId ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let communityId:number,channelId:number;
+
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        switch(condition.FieldName){
+          case 'communityId':
+            communityId = condition.FieldValue;
+            break;
+          case 'channelId' :
+            channelId = condition.FieldValue;
+            break;
+        }
+
+      })
+      let result = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_learners(${communityId}, ${channelId}, ${requestModel.Filter.PageInfo.PageNumber}, ${requestModel.Filter.PageInfo.PageSize})`);
       return result;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -364,6 +415,10 @@ export class LessonRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
+
+  
 
 
   // @Get("/count/findRecord/one")

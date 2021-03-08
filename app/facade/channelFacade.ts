@@ -34,11 +34,15 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             let isPublished:boolean = true;
             for(let i=0;i<requestModel.Filter.Conditions.length;i++){
                 if(requestModel.Filter.Conditions[i].FieldName == "isPublished"){
+                    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> i is ......",requestModel.Filter.Conditions[i]);
                     isPublished = requestModel.Filter.Conditions[i].FieldValue;
-                    requestModel.Filter.Conditions.splice(i,i)
+                    // delete requestModel.Filter.Conditions[i];
+                    requestModel.Filter.Conditions.splice(i,1);
                     break;
                 }
             }
+
+            console.log("Final RequestModel is.....",JSON.stringify(requestModel));
             let isCaseInsensitiveSearch = false;
             if (requestModel != null && requestModel.Filter != null) {
               orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
@@ -125,8 +129,8 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             console.log("\n\n\n\nUnique Published lessonIds Created by are..............",publishedUniqueLessonCreatorIds,"\n\n\n\n");
             let userDetails = await this.utilityFacade.getUserDetails(publishedUniqueLessonCreatorIds);
             // console.log("userdetails are....",userDetails.DataCollection);
-            console.log(result);
-            result.push(userDetails.getDataCollection());
+            console.log("Finally Fetched from group......",userDetails.DataCollection);
+            result.push(userDetails.DataCollection);
             console.log("\n\n\n\n\n\nAt the end...result is...",result,'\n\n\n\n\n\n\n\n\n');
             let final_result: ResponseModel<any> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
             console.log("Setting result......")

@@ -18,6 +18,8 @@ import { ConditionalOperation } from 'submodules/platform-3.0-Dtos/submodules/pl
 import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 // let dto_maps = require('../smartup_dtos/channelUserDto')
 var objectMapper = require('object-mapper');
+let mapperDto = require('../../submodules/platform-3.0-Mappings/channelUserMapper');
+
 
 @Controller('channelUser')
 export class ChannelUserRoutes implements OnModuleInit{
@@ -158,6 +160,29 @@ export class ChannelUserRoutes implements OnModuleInit{
 
   
 
+  // @Get("/:pageSize/:pageNumber")
+  // async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     requestModel.Filter.PageInfo.PageSize = pageSize;
+  //     requestModel.Filter.PageInfo.PageNumber = pageNumber;
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.channelUser_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.channelUser_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if (!isSubset) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.channelUser_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('channelUser')<=-1)
+  //       requestModel.Children.unshift('channelUser');
+  //     let result = await this.channelUserFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
   @Get("/:pageSize/:pageNumber")
   async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
@@ -182,8 +207,9 @@ export class ChannelUserRoutes implements OnModuleInit{
   }
 
 
+
   @Get("/count/findAllMemberCountOfAParticularChannel/all")
-  async func(@Req() req:Request){
+  async func1(@Req() req:Request){
     let requestModel1: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
     let channelIds = [];
     requestModel1.Filter.Conditions.forEach((condition:Condition)=>{
@@ -203,7 +229,7 @@ export class ChannelUserRoutes implements OnModuleInit{
       
     })
     requestModel.Filter.OrderByField = "channelUser.channelId";
-    let result1 = await this.channelUserFacade.getCountByConditions(requestModel)
+    let result1 = await this.channelUserFacade.getCountByConditions(requestModel,"DISTINCT(channelUser.userId)")
     console.log("result1....",result1);
     let result2 = await this.channelGroupFacade.findAllUsersInAGroupSubscribedToAChannel(channelIds);
     console.log("result2....",result2);
@@ -233,11 +259,79 @@ export class ChannelUserRoutes implements OnModuleInit{
     return dict;
   }
 
+  @Get("/findAllMemberOfAParticularChannel/:pageSize/:pageNumber")
+  async func(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request){
+    try {
+      console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let result:ResponseModel<ChannelUserDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
+      let dataCollection = [];
+      let communityId,channelId,userId;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        switch(condition.FieldName.toLowerCase()){
+          case "communityid":
+            communityId = condition.FieldValue
+            break 
+          case "userid":
+            userId = condition.FieldValue
+            break 
+          case "channelid":
+            channelId = condition.FieldValue
+            break 
+        }
+      })
+      // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
+      //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_users(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      //   dataCollection.push(final_result);
+      // })
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_users(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      console.log(final_result)
+      let final_result_updated = [];
+      final_result.forEach((entity:any)=>{
+        entity = objectMapper(entity,mapperDto.channelUserBasedOnChannelMapper)
+        final_result_updated.push(entity)
+      })
+      // final_result = objectMapper(final_result,mapperDto.channelUserBasedOnChannelMapper)
+      dataCollection.push(final_result_updated)
+      result.setDataCollection(dataCollection);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
+    } catch (error) {
+      await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // @Post("/") 
+  // async createChannelUser(@Body() body:RequestModel<ChannelUserDto>): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelUserDto></ChannelUserDto>....Promise<ResponseModel<Grou[pDto>>]
+  //   try {
+  //     await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+  //     let result = await this.channelUserFacade.create(body);
+  //     // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+  //     return result;
+  //     // return null;
+  //   } catch (error) {
+  //     await console.log("Error is....." + error);
+  //     // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
   @Post("/") 
-  async createChannelUser(@Body() body:RequestModel<ChannelUserDto>): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelUserDto></ChannelUserDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createChannelUser(@Body() body:any): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      let result = await this.channelUserFacade.create(body);
+      let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      let dataCollection = []
+      body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+        let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},${dto.channelUserAdditionalDetails})`);
+        dataCollection.push(final_result);
+      })
+      result.setDataCollection(dataCollection);
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
@@ -266,17 +360,24 @@ export class ChannelUserRoutes implements OnModuleInit{
   // }
 
   @Delete('/')
-  deleteChannelUser(@Body() body:RequestModel<ChannelUserDto>): Promise<ResponseModel<ChannelUserDto>>{
+  async deleteChannelUser(@Body() body:any):Promise<ResponseModel<ChannelUserDto>>{
     try {
-      let delete_ids :Array<number> = [];
-      body.DataCollection.forEach((entity:ChannelUserDto)=>{
-        delete_ids.push(entity.Id);
+      await console.log("Inside DeleteProduct of controller....body id" + JSON.stringify(body));
+      let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      let dataCollection = []
+      body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+        let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_users(${body.CommunityId},${dto.channelId},${dto.userId})`)
+        dataCollection.push(final_result);
       })
-      console.log("Ids are......",delete_ids);
-      return this.channelUserFacade.deleteById(delete_ids);
-        } catch (error) {
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+      result.setDataCollection(dataCollection);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
+    } catch (error) {
+      await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   // @Get("/count/findRecord/all")

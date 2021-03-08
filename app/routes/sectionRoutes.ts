@@ -27,7 +27,7 @@ export class SectionRoutes{
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
 
-  private section_children_array = ["channel"]
+  private section_children_array = ["channel","lesson"]
   
   onModuleInit() {
     // const requestPatterns = [
@@ -160,7 +160,7 @@ export class SectionRoutes{
       // }
       if(requestModel.Children.indexOf('section')<=-1)
         requestModel.Children.unshift('section');
-      let custom_section_children_array = [['section','lesson'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let custom_section_children_array = [['section','lesson'],['section','sectionReview'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.sectionFacade.search(requestModel,true,custom_section_children_array);
       result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result,true);
       
@@ -310,29 +310,29 @@ export class SectionRoutes{
         }
   }
 
-  // @Get("/count/findRecord/all")
-  // async getCount(@Req() req:Request) {
-  //   try {
-  //     console.log("Inside controller123 ......group by pageSize & pageNumber");
-  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
-  //     let given_children_array = requestModel.Children;
-  //     let isSubset = given_children_array.every(val => this.community_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.community_children_array.filter(el => el === val).length);
-  //     console.log("isSubset is......" + isSubset);
-  //     if ( !isSubset || given_children_array.length==0) {
-  //       console.log("Inside Condition.....")
-  //       requestModel.Children = this.community_children_array;
-  //     }
-  //     if(requestModel.Children.indexOf('community')<=-1)
-  //       requestModel.Children.unshift('community');
-  //     console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
-  //     var result = await this.communityFacade.getCountByConditions(requestModel);
-  //     // let result = await this.groupUserFacade.search(requestModel);
-  //     return result;
-  //   } catch (error) {
-  //     console.log("Error is....." + JSON.stringify(error));
-  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
+  @Get("/count/findAllLessonCountBasedOnSectionId/all")
+  async getCount(@Req() req:Request) {
+    try {
+      console.log("Inside controller123 ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      let given_children_array = requestModel.Children;
+      let isSubset = given_children_array.every(val => this.section_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.section_children_array.filter(el => el === val).length);
+      console.log("isSubset is......" + isSubset);
+      if ( !isSubset) {
+        console.log("Inside Condition.....")
+        requestModel.Children = this.section_children_array;
+      }
+      if(requestModel.Children.indexOf('section')<=-1)
+        requestModel.Children.unshift('section');
+      console.log("\n\n\n\nRequestModel inside routes is....." + JSON.stringify(requestModel));
+      var result = await this.sectionFacade.getCountByConditions(requestModel,"DISTINCT(lesson.Id)");
+      // let result = await this.groupUserFacade.search(requestModel);
+      return result;
+    } catch (error) {
+      console.log("Error is....." + JSON.stringify(error));
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
 
   // @Get("/count/findRecord/one")

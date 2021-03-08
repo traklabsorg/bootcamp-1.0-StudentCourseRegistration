@@ -13,6 +13,8 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
+import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 
 
 @Controller('channelGroup')
@@ -31,56 +33,68 @@ export class ChannelGroupRoutes{
     // ];
     for (var i = 0; i < this.topicArray.length; i++) {
       this.sns_sqs.listenToService(this.topicArray[i], this.serviceName[i], (() => {
-        var value = this.topicArray[i];
+        let value = this.topicArray[i];
         return async (result) => {
-          await console.log("Result is........" + JSON.stringify(result));
+          await console.log("Result is........" + result);
           try {
-            let responseModelOfChannelGroupDto: any = null;
+            let responseModelOfChannelGroupDto: ResponseModel<ChannelGroupDto> = null;
             console.log(`listening to  ${value} topic.....result is....`);
             // ToDo :- add a method for removing queue message from queue....
             switch (value) {
               case 'CHANNELGROUP_ADD':
                 console.log("Inside CHANNELGROUP_ADD Topic");
-                responseModelOfChannelGroupDto = this.createChannelGroup(result["message"]);
+                responseModelOfChannelGroupDto = await this.createChannelGroup(result["message"]);
                 break;
               case 'CHANNELGROUP_UPDATE':
                 console.log("Inside CHANNELGROUP_UPDATE Topic");
-               responseModelOfChannelGroupDto = this.updateChannelGroup(result["message"]);
+               responseModelOfChannelGroupDto = await this.updateChannelGroup(result["message"]);
                 break;
               case 'CHANNELGROUP_DELETE':
                 console.log("Inside CHANNELGROUP_DELETE Topic");
-                responseModelOfChannelGroupDto = this.deleteChannelGroup(result["message"]);
+                responseModelOfChannelGroupDto = await this.deleteChannelGroup(result["message"]);
                 break;
   
             }
   
-            console.log("Result of aws  is...." + JSON.stringify(result));
-            // let responseModelOfChannelGroupDto = this.userFacade.create(result["message"]);
-  
+            console.log("Result of aws of channelGroupRoutes  is...." + JSON.stringify(result));
+            let requestModelOfChannelGroupDto: RequestModel<ChannelGroupDto> = result["message"];
+            responseModelOfChannelGroupDto.setSocketId(requestModelOfChannelGroupDto.SocketId)
+            responseModelOfChannelGroupDto.setCommunityUrl(requestModelOfChannelGroupDto.CommunityUrl);
+            responseModelOfChannelGroupDto.setRequestId(requestModelOfChannelGroupDto.RequestGuid);
+            responseModelOfChannelGroupDto.setStatus(new Message("200", "ChannelGroup Inserted Successfully", null));
+
+            // let responseModelOfChannelGroupDto = this.channelUserFacade.create(result["message"]);
+
+            // result["message"].DataCollection = responseModelOfChannelGroupDto.DataCollection;
             //this.creategroup(result["message"])
             for (let index = 0; index < result.OnSuccessTopicsToPush.length; index++) {
               const element = result.OnSuccessTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, result)
+              this.sns_sqs.publishMessageToTopic(element, responseModelOfChannelGroupDto)
             }
           }
           catch (error) {
-            await console.log("Inside Catch.........");
-            await console.log(error, result);
+            console.log("Inside Catch.........");
+            console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              this.sns_sqs.publishMessageToTopic(element, result);
+              let errorResult: ResponseModel<ChannelGroupDto> = new ResponseModel<ChannelGroupDto>(null,null,null,null,null,null,null,null,null);
+              errorResult.setStatus(new Message("500",error,null))
+              
+
+              this.sns_sqs.publishMessageToTopic(element, errorResult);
             }
-            
           }
         }
       })())
     }
 
-
-
     
     
+    // requestPatterns.forEach(pattern => {
+    //   this.client.subscribeToResponseOf(pattern);
+    // });
   }
+
 
   @Get("/")
   allProducts() {
@@ -118,7 +132,6 @@ export class ChannelGroupRoutes{
     }
   }
 
-  
 
   @Get("/:pageSize/:pageNumber")
   async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
@@ -127,27 +140,88 @@ export class ChannelGroupRoutes{
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
-      let given_children_array = requestModel.Children;
-      let isSubset = given_children_array.every(val => this.channel_group_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.channel_group_children_array.filter(el => el === val).length);
-      console.log("isSubset is......" + isSubset);
-      if (!isSubset) {
-        console.log("Inside Condition.....")
-        requestModel.Children = this.channel_group_children_array;
-      }
-      if(requestModel.Children.indexOf('channelGroup')<=-1)
-        requestModel.Children.unshift('channelGroup');
-      let result = await this.channelGroupFacade.search(requestModel);
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
+      let dataCollection = [];
+      let communityId,channelId,groupId;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        switch(condition.FieldName){
+          case "CommunityId":
+            communityId = condition.FieldValue
+            break 
+          case "groupId":
+            groupId = condition.FieldValue
+            break 
+          case "channelId":
+            channelId = condition.FieldValue
+            break 
+        }
+      })
+      requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
+        let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+        dataCollection.push(final_result);
+      })
+      result.setDataCollection(dataCollection);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
+      // return null;
     } catch (error) {
+      await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
+  
+
+  // @Get("/:pageSize/:pageNumber")
+  // async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+  //   try {
+  //     console.log("Inside controller ......group by pageSize & pageNumber");
+  //     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+  //     requestModel.Filter.PageInfo.PageSize = pageSize;
+  //     requestModel.Filter.PageInfo.PageNumber = pageNumber;
+  //     let given_children_array = requestModel.Children;
+  //     let isSubset = given_children_array.every(val => this.channel_group_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.channel_group_children_array.filter(el => el === val).length);
+  //     console.log("isSubset is......" + isSubset);
+  //     if (!isSubset) {
+  //       console.log("Inside Condition.....")
+  //       requestModel.Children = this.channel_group_children_array;
+  //     }
+  //     if(requestModel.Children.indexOf('channelGroup')<=-1)
+  //       requestModel.Children.unshift('channelGroup');
+  //     let result = await this.channelGroupFacade.search(requestModel);
+  //     return result;
+  //   } catch (error) {
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
+  // @Post("/") 
+  // async createChannelGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  //   try {
+  //     await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+  //     let result = await this.channelGroupFacade.create(body);
+  //     // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+  //     return result;
+  //     // return null;
+  //   } catch (error) {
+  //     await console.log("Error is....." + error);
+  //     // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
   @Post("/") 
-  async createChannelGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  async createChannelGroup(@Body() body:any): Promise<ResponseModel<ChannelGroupDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      let result = await this.channelGroupFacade.create(body);
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      let dataCollection = []
+      body.DataCollection.forEach(async (dto:ChannelGroupDto)=>{
+        let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_group(${body.CommunityId},${dto.channelId},${dto.groupId})`)
+        dataCollection.push(final_result);
+      })
+      result.setDataCollection(dataCollection);
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
@@ -175,18 +249,39 @@ export class ChannelGroupRoutes{
   //   return null;
   // }
 
+  // @Delete('/')
+  // deleteChannelGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>>{
+  //   try {
+  //     let delete_ids :Array<number> = [];
+  //     body.DataCollection.forEach((entity:ChannelGroupDto)=>{
+  //       delete_ids.push(entity.Id);
+  //     })
+  //     console.log("Ids are......",delete_ids);
+  //     return this.channelGroupFacade.deleteById(delete_ids);
+  //       } catch (error) {
+  //         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  //       }
+  // }
+
   @Delete('/')
-  deleteChannelGroup(@Body() body:RequestModel<ChannelGroupDto>): Promise<ResponseModel<ChannelGroupDto>>{
+  async deleteChannelGroup(@Body() body:any):Promise<ResponseModel<ChannelGroupDto>>{
     try {
-      let delete_ids :Array<number> = [];
-      body.DataCollection.forEach((entity:ChannelGroupDto)=>{
-        delete_ids.push(entity.Id);
+      await console.log("Inside DeleteProduct of controller....body id" + JSON.stringify(body));
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      let dataCollection = []
+      body.DataCollection.forEach(async (dto:ChannelGroupDto)=>{
+        let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_groups(${body.CommunityId},${dto.channelId},${dto.groupId})`)
+        dataCollection.push(final_result);
       })
-      console.log("Ids are......",delete_ids);
-      return this.channelGroupFacade.deleteById(delete_ids);
-        } catch (error) {
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+      result.setDataCollection(dataCollection);
+      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      return result;
+      // return null;
+    } catch (error) {
+      await console.log("Error is....." + error);
+      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get("/count/findRecord/all")

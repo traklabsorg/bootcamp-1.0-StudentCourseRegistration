@@ -24,7 +24,7 @@ export class ChannelGroupFacade extends AppService<ChannelGroup,ChannelGroupDto>
         let query = this.genericRepository.createQueryBuilder("channelGroup")
         .innerJoinAndSelect("channelGroup.group","group")
         .innerJoinAndSelect("group.groupUser","groupUser")
-        .select("COUNT(groupUser.userId)", 'count_temp')
+        .select("COUNT(DISTINCT(groupUser.userId))", 'count_temp')
         //.addSelect("groupUser.userId",'userIds')
         .addSelect("channelGroup.channelId")
         
