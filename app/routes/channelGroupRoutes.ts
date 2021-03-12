@@ -160,7 +160,7 @@ export class ChannelGroupRoutes{
 
 
   @Get("/findAllChannelGroupOfAParticularChannel/:pageSize/:pageNumber")
-  async func1(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+  async findAllChannelGroupOfAParticularChannel(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
@@ -168,26 +168,29 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
-      let communityId,channelId,groupId;
+      var channelIds : number[] = [];
+      let communityId,channelIdsFinal:string ="",groupId;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
         switch(condition.FieldName.toLowerCase()){
           case "communityid":
-            communityId = condition.FieldValue
+            communityId = condition.FieldValue 
             break 
           case "groupid":
             groupId = condition.FieldValue
             break 
           case "channelid":
-            channelId = condition.FieldValue
+            channelIds.push(condition.FieldValue); 
             break 
         }
       })
+      channelIdsFinal = channelIds.join();
+      console.log(typeof channelIdsFinal); 
       // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
       //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       //   dataCollection.push(final_result);
       // })
-      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},'${channelIdsFinal}',${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = []
       // dataCollection.push(final_result);
       final_result.forEach((entity:any)=>{
