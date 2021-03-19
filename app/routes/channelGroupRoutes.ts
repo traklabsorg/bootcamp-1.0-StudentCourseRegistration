@@ -168,13 +168,8 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
-<<<<<<< HEAD
       let channelIdsAsText = "";
       let communityId,channelId,groupId;
-=======
-      var channelIds : number[] = [];
-      let communityId,channelIdsFinal:string ="",groupId;
->>>>>>> 68bc879d8b2c0c0397b0be63caa0223ea207fc5f
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
         switch(condition.FieldName.toLowerCase()){
