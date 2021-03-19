@@ -79,6 +79,10 @@ export class UtilityFacade {
                                 break;
                             }
                         }
+                        if (sample_lessonData.lessonDataReview.length == 0){
+                            flag = false;
+                            break;
+                        }
                         if(flag == false)
                             break
                     }
@@ -119,13 +123,15 @@ export class UtilityFacade {
         console.log("Result getting returned is.....",result);
         if(findUserDeatils == true){
             let userDetails = await this.getUserDetails(publishedLessonCreatorIds);
-
+            if(publishedLessonCreatorIds.length == 0 || publishedLessonCreatorIds == [null])
+            userDetails.DataCollection = null;
             console.log("Userdetails......",userDetails);
             // console.log("result is.......",result);
 
             // let myJSON = {};
             // myJSON["userDetails"] = userDetails.DataCollection
             // result.DataCollection.push(myJSON);
+            if(userDetails.DataCollection != null)
             result.DataCollection.push(userDetails.DataCollection);
             console.log("Final TResult to be returned is....",result);
             return result
@@ -135,7 +141,7 @@ export class UtilityFacade {
     }
 
 
-    
+
     
   
 }

@@ -29,7 +29,7 @@ export class LessonRoutes{
   private topicArray = ['LESSON_ADD','LESSON_UPDATE','LESSON_DELETE'];
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
 
-  private lesson_children_array = ["section"];
+  private lesson_children_array = ["section","lessonData"];
 
   
   async onModuleInit() {

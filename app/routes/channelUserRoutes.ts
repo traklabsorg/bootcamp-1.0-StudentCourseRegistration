@@ -362,10 +362,11 @@ export class ChannelUserRoutes implements OnModuleInit{
   @Delete('/')
   async deleteChannelUser(@Body() body:any):Promise<ResponseModel<ChannelUserDto>>{
     try {
-      await console.log("Inside DeleteProduct of controller....body id" + JSON.stringify(body));
+      await console.log("Inside DeleteProduct of controller....body id..." + JSON.stringify(body.DataCollection));
       let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
       let dataCollection = []
       body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+        console.log(dto)
         let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_users(${body.CommunityId},${dto.channelId},${dto.userId})`)
         dataCollection.push(final_result);
       })

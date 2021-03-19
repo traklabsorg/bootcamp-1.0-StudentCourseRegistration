@@ -167,6 +167,7 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
+      let channelIdsAsText = "";
       let communityId,channelId,groupId;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
@@ -178,15 +179,24 @@ export class ChannelGroupRoutes{
             groupId = condition.FieldValue
             break 
           case "channelid":
-            channelId = condition.FieldValue
+            channelId = condition.FieldValue;
+            channelIdsAsText = channelIdsAsText + channelId + ",";
             break 
         }
       })
+      if(channelIdsAsText.includes(',')){
+        channelIdsAsText = channelIdsAsText.slice(0,-1);
+        channelIdsAsText = "'" + channelIdsAsText + "'";      // keep this here only , ad channelIdsAsText can also be null
+      }
+      else{
+        channelIdsAsText = null;
+      }
+      console.log(channelIdsAsText)
       // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
       //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       //   dataCollection.push(final_result);
       // })
-      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelIdsAsText},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = []
       // dataCollection.push(final_result);
       final_result.forEach((entity:any)=>{
@@ -215,7 +225,7 @@ export class ChannelGroupRoutes{
 
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
       let dataCollection = [];
-      let communityId,channelId,userId;
+      let communityId=null,channelId=null,userId=null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition is......",condition);
         switch(condition.FieldName.toLowerCase()){
@@ -255,7 +265,7 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
-      let communityId,channelId,userId,type,publicationType;
+      let communityId=null,channelId=null,userId=null,type=null,publicationType=null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
         switch(condition.FieldName.toLowerCase()){
