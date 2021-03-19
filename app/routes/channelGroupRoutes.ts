@@ -10,11 +10,12 @@ import { Request } from 'express';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 // import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
-import { ChannelGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
+import { ChannelGroupDto, ChannelUsersByGroupDto } from '../../submodules/platform-3.0-Dtos/channelGroupDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
 let mapperDto = require('../../submodules/platform-3.0-Mappings/channelGroupMapper');
 
 
@@ -159,7 +160,7 @@ export class ChannelGroupRoutes{
 
 
   @Get("/findAllChannelGroupOfAParticularChannel/:pageSize/:pageNumber")
-  async func1(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+  async findAllChannelGroupOfAParticularChannel(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
@@ -167,13 +168,18 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
+<<<<<<< HEAD
       let channelIdsAsText = "";
       let communityId,channelId,groupId;
+=======
+      var channelIds : number[] = [];
+      let communityId,channelIdsFinal:string ="",groupId;
+>>>>>>> 68bc879d8b2c0c0397b0be63caa0223ea207fc5f
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
         switch(condition.FieldName.toLowerCase()){
           case "communityid":
-            communityId = condition.FieldValue
+            communityId = condition.FieldValue 
             break 
           case "groupid":
             groupId = condition.FieldValue
@@ -444,6 +450,51 @@ export class ChannelGroupRoutes{
       console.log("Error is....." + JSON.stringify(error));
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  //Get channel users by group
+  @Get('/getChannelUsersByGroup/:pageSize/:pageNumber')
+  async getChannelUsersByGroup(@Param('pageSize') pageSize : number,@Param('pageNumber') pageNumber : number,@Req() req:Request ):Promise<ResponseModel<ChannelUsersByGroupDto>>{
+     try{
+      
+      
+      let communityId: number,channelId: number,groupId: number;
+      let requestModelQuery: RequestModelQuery = JSON.parse(req.headers.requestmodel.toString());
+      requestModelQuery.Filter.PageInfo.PageSize = pageSize;
+      requestModelQuery.Filter.PageInfo.PageNumber = pageNumber;
+      
+    requestModelQuery.Filter.Conditions.map((condition: Condition)=>{
+      switch(condition.FieldName.toLowerCase()){
+        case "communityid": communityId = condition.FieldValue;
+        break;
+        case "channelid": channelId = condition.FieldValue;
+        break;
+        case "groupid": groupId = condition.FieldValue;
+        break;
+      }
+    })
+    //applying query on retrieved data fields 
+     let queryResult = await this.channelGroupFacade.genericRepository.query(`Select * from public.fn_get_channels_users_by_group(${communityId},${channelId},${groupId},${pageNumber},${pageSize})`);     
+     console.log(queryResult);
+     let final_result_updated = [];
+     let result:ResponseModel<ChannelUsersByGroupDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      
+     queryResult.forEach((entity:any)=>{
+        entity = objectMapper(entity,mapperDto.channelUsersByGroupMapper); // mapping to camel case
+        final_result_updated.push(entity)
+      })
+      result.setDataCollection(final_result_updated);
+     return result;
+        
+     }
+     catch (error) {
+      console.log("Error is....." + JSON.stringify(error));
+      let errorResult: ResponseModel<ChannelUsersByGroupDto> = new ResponseModel<ChannelUsersByGroupDto>(null,null,null,null,null,null,null,null,null);
+      errorResult.setStatus(new Message("500",error,null));
+      return errorResult;
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
   }
 
   // @Get("/a/b/c/d/e")
