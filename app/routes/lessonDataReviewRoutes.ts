@@ -13,12 +13,17 @@ import { LessonDataReviewDto } from '../../submodules/platform-3.0-Dtos/lessonDa
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { LessonDto } from 'submodules/platform-3.0-Dtos/lessonDto';
+import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+import { LessonDataFacade } from 'app/facade/lessonDataFacade';
+import { Label, NotificationDto, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { LessonDataDto } from 'submodules/platform-3.0-Dtos/lessonDataDto';
 
 
 @Controller('lessonDataReview')
 export class LessonDataReviewRoutes{
 
-  constructor(private lessonDataReviewFacade: LessonDataReviewFacade) { }
+  constructor(private lessonDataReviewFacade: LessonDataReviewFacade, private lessonDataFacade:LessonDataFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LESSONDATAREVIEW_ADD','LESSONDATAREVIEW_UPDATE','LESSONDATAREVIEW_DELETE'];
@@ -177,14 +182,11 @@ export class LessonDataReviewRoutes{
   @Post("/") 
   async createLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      let result = await this.lessonDataReviewFacade.create(body);
-      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      let result = await this.lessonDataReviewFacade.createOrUpdateLessonDataReview(body,true);
       return result;
-      // return null;
     } catch (error) {
-      await console.log("Error is....." + error);
-      // this.sns_sqs.publishMessageToTopic("ERROR_RECEIVER",{error:error})
+      console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -193,7 +195,7 @@ export class LessonDataReviewRoutes{
   async updateLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.lessonDataReviewFacade.updateEntity(body);
+      return await this.lessonDataReviewFacade.createOrUpdateLessonDataReview(body,false);
     } catch (error) {
       await console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

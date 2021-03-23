@@ -13,6 +13,11 @@ import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { json } from 'body-parser';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { GroupDto } from 'submodules/platform-3.0-Dtos/groupDto';
+import { NotificationDto, Label, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { GROUP_MICROSERVICE_URI } from 'config';
+import { UserDto } from 'submodules/platform-3.0-Dtos/userDto';
+import { UtilityFacade } from 'app/facade/utilityFacade';
 // let dto_maps = require('../smartup_dtos/channelDto')
 var objectMapper = require('object-mapper');
 
@@ -21,7 +26,7 @@ export class ChannelRoutes implements OnModuleInit{
 
   
 
-  constructor(private channelFacade: ChannelFacade) { }
+  constructor(private channelFacade: ChannelFacade, private utilityFacade: UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['CHANNEL_ADD','CHANNEL_UPDATE','CHANNEL_DELETE'];
@@ -202,7 +207,42 @@ export class ChannelRoutes implements OnModuleInit{
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.channelFacade.create(body);
-      // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
+      console.log("Result returned is ")
+      console.log("--------------------------------------------------------------------")
+      console.log(result.getDataCollection());
+      
+      let createChannelSuccessResult:RequestModel<NotificationDto> = new RequestModel();
+      createChannelSuccessResult.CommunityId = body.CommunityId;
+      createChannelSuccessResult.CommunityUrl = body.CommunityUrl;
+      createChannelSuccessResult.DataCollection = []
+      createChannelSuccessResult.SocketId = body.SocketId;
+      createChannelSuccessResult.RequestGuid = body.RequestGuid;
+      result.getDataCollection().forEach(async (channel:ChannelDto)=>{
+        let notification:NotificationDto = new NotificationDto();
+        let creatorId = result.getDataCollection()[0].CreatedBy;
+        console.log(creatorId);
+
+        //fetching creatorDetails
+        let creatorDetails = await this.utilityFacade.getUserDetails([creatorId]);
+        console.log("Creator Details...........")
+        console.log(creatorDetails)
+        let creatorName : string;
+        if(creatorDetails && creatorDetails.DataCollection.length){
+            creatorName = (creatorDetails.DataCollection[0].userName);
+            notification.userId = channel.CreatedBy;
+            notification.label = Label.channelAdded;
+            notification.notificationType = NotificationType.email;
+            notification.dateTime = channel.CreationDate;
+            notification.notificationData = {"channelName":channel.title,"createdBy":creatorName,"channelId":channel.Id}
+            createChannelSuccessResult.DataCollection.push(notification);
+            console.log("succesfully prepared notification object............",createChannelSuccessResult)
+            this.sns_sqs.publishMessageToTopic("NOTIFICATION_ADD",createChannelSuccessResult);
+            console.log("pushing notification to aws");
+       }
+      })
+    
+      
+      // this.sns_sqs.publishMessageToTopic("Channel_ADDED",{success:body})  // remove from here later
       return result;
       // return null;
     } catch (error) {

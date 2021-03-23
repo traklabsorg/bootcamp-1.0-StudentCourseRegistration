@@ -62,7 +62,7 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             }
 
             
-            queryField = await this.assignConditionsToRequestModelQuery(requestModel,queryField);
+            queryField = await this.assignConditionsToRequestModelQueryV2(requestModel,queryField);
             // queryField = await queryField.where("lessonDataReview.reviewStatus = :reviewStatus", { reviewStatus: isPublished })
             queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
             let result:any = await queryField.getMany();
@@ -76,7 +76,7 @@ export class ChannelFacade extends AppService<Channel, ChannelDto> {
             //     })
             // })
             let publishedLessonCreatorIds = [];
-            
+            //Debur haga
             for(let i=0;i<result.length;i++){
                 let sample_channel = result[i]
                 // setTimeout(function(){

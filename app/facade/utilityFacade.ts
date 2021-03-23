@@ -14,10 +14,15 @@ import { Filter } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Com
 import { Condition } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/condition";
 import { ConditionalOperation } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/conditionOperation";
 import { UserDto } from '../../submodules/platform-3.0-Dtos/userDto';
+import { Label, NotificationData, NotificationDto, NotificationType } from "submodules/platform-3.0-Dtos/notificationDto";
+import { AppService } from "app.service";
+import { SNS_SQS } from "submodules/platform-3.0-AWS/SNS_SQS";
 let dto = require("../../submodules/platform-3.0-Mappings/communityMapper");
 
 @Injectable()
-export class UtilityFacade {
+export class UtilityFacade{
+
+public sns_sqs = SNS_SQS.getInstance();
   
   constructor(public http: HttpService) {
 
@@ -26,6 +31,8 @@ export class UtilityFacade {
    onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
+
+  //returns details of users with given Ids
 
     async getUserDetails(userIds:number[]): Promise<any>{
 
@@ -57,6 +64,32 @@ export class UtilityFacade {
       return httpResponse.data;
    
 }
+
+
+    //fetches email ids of given userids from group service
+    async getUserEmail(userIds: number[]): Promise<string[]>{
+        let requestModel = new RequestModelQuery();
+        let i = 0;
+        let filter = new Filter();
+        filter.Conditions = [];
+        userIds.forEach((id:number)=>{
+            let condition = new Condition();
+            condition.FieldName = "Id";
+            condition.FieldValue = id;
+            condition.ConditionalSymbol = ConditionalOperation.Or;
+            filter.Conditions.push(condition);
+        })
+        requestModel.Filter = filter;
+        //   console.log("\n\n\n\nRequestModel Finally generated is.....",JSON.stringify(requestModel),"\n\n\n\n")
+        const headersRequest = {'requestmodel':JSON.stringify(requestModel)};
+            let httpResponse =  (await this.http.get(GROUP_MICROSERVICE_URI+"/user/1000/1",{ headers: headersRequest }).toPromise()).data;
+            //console.log(httpResponse)
+            let emailIds = [];
+            httpResponse.DataCollection.map((user:any)=>{
+              emailIds.push(user.userEmail)
+            })
+            return emailIds;
+    }
 
     async assignIsPublishedFieldsToSectionAndLesson(result:any,findUserDeatils?:boolean):Promise<any>{
         let publishedLessonCreatorIds = [];
@@ -138,6 +171,18 @@ export class UtilityFacade {
         }
         
         return result;
+    }
+
+    async createNotification(userId?:number,label?:Label,notificationType?:NotificationType,creationDate ?: any,notificationData?:NotificationData):Promise<any>{
+        let notification:NotificationDto = new NotificationDto();
+        let notificationResult : RequestModel<NotificationDto> = new RequestModel();
+        notification.userId = userId,notification.label = label,notification.notificationType = NotificationType.email
+        notification.CreationDate = creationDate,notification.notificationData = notificationData;
+        notificationResult.DataCollection.push(notification)
+        console.log("pushing notification to aws.....",notificationResult);
+        this.sns_sqs.publishMessageToTopic("NOTIFICATION_ADD",notificationResult);
+
+        return null;
     }
 
 

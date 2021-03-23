@@ -16,12 +16,15 @@ import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.
 import { LessonFacade } from '../facade/lessonFacade';
 import { Condition } from '../../submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 import { UtilityFacade } from '../facade/utilityFacade';
+import { Label, NotificationDto, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { ChannelUserFacade } from 'app/facade/channelUserFacade';
+import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 
 
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private sectionFacade: SectionFacade, private lessonFacade:LessonFacade,private utilityFacade:UtilityFacade) { }
+  constructor(private channelGroupFacade: ChannelGroupFacade,private channelUserFacade: ChannelUserFacade,private sectionFacade: SectionFacade, private lessonFacade:LessonFacade,private utilityFacade:UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
@@ -269,6 +272,32 @@ export class SectionRoutes{
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.sectionFacade.create(body);
+      console.log(result.getDataCollection());
+      
+      //code for notification
+      let createSectionSuccessResult:RequestModel<NotificationDto> = new RequestModel();
+      createSectionSuccessResult.CommunityId = body.CommunityId;
+      createSectionSuccessResult.CommunityUrl = body.CommunityUrl;
+      createSectionSuccessResult.DataCollection = []
+      createSectionSuccessResult.SocketId = body.SocketId;
+      createSectionSuccessResult.RequestGuid = body.RequestGuid;
+      body.DataCollection.map(async (section: SectionDto)=>{
+        //retrieve userIds of all members of the channel
+        let pageSize: number = 1000,pageNumber: number = 1;
+        let userIds: number[] = await this.channelGroupFacade.getUserIdsByChannelId([section.channelId],pageSize,pageNumber);
+        console.log("Email ids are....",userIds);   
+        userIds.map(async (userId: number)=>{
+          let sectionNotificationData = {
+            "courseId" : section.Id,
+            "courseTitle" : section.title,
+            "channelName" : section.channel.title,
+            "courseLink" : (section.sectionDetails.coverimage)?section.sectionDetails.coverimage:"sample link",
+          }
+          
+          await this.utilityFacade.createNotification(userId,Label.newCourse,NotificationType.email,section.CreationDate,sectionNotificationData)
+        }) 
+        
+      })
       // this.sns_sqs.publishMessageToTopic("SECTION_ADDED",{success:body})  // remove from here later
       return result;
       // return null;

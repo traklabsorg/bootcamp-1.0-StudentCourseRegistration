@@ -14,6 +14,8 @@ import { GROUP_MICROSERVICE_URI } from "config";
 import { map } from "rxjs/operators";
 import { UtilityFacade } from './utilityFacade';
 import { UserDetails } from '../../submodules/platform-3.0-Dtos/userDto';
+import { Filter } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/filter";
+import { Condition } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition";
 let dto = require('../../submodules/platform-3.0-Mappings/channelUserMapper')
 
 @Injectable()
@@ -25,6 +27,7 @@ export class ChannelUserFacade extends AppService<ChannelUser, ChannelUserDto> {
         
     }
 
+    
 
     
 

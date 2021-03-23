@@ -17,13 +17,18 @@ import { LessonDataReviewFacade } from '../facade/lessonDataReviewFacade';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 import { LessonDataDto } from 'submodules/platform-3.0-Dtos/lessonDataDto';
 import { LessonDataUserDto } from 'submodules/platform-3.0-Dtos/lessonDataUserDto';
+import { NotificationDto, Label, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { UtilityFacade } from 'app/facade/utilityFacade';
+import { UserDto } from 'submodules/platform-3.0-Dtos/userDto';
+import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
+import { Lesson } from 'submodules/platform-3.0-Entities/lesson';
 let mapperDto = require('../../submodules/platform-3.0-Mappings/lessonMapper');
 
 
 @Controller('lesson')
 export class LessonRoutes{
 
-  constructor(private lessonFacade: LessonFacade,private lessonDataReviewFacade:LessonDataReviewFacade) { }
+  constructor(private channelGroupFacade: ChannelGroupFacade,private lessonFacade: LessonFacade,private lessonDataReviewFacade:LessonDataReviewFacade,private utilityFacade:UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LESSON_ADD','LESSON_UPDATE','LESSON_DELETE'];
@@ -355,6 +360,39 @@ export class LessonRoutes{
 
       })
       let result = await this.lessonFacade.create(body);
+       //code for notification
+       //code for notification
+      let createLessonSuccessResult:RequestModel<NotificationDto> = new RequestModel();
+      createLessonSuccessResult.CommunityId = body.CommunityId;
+      createLessonSuccessResult.CommunityUrl = body.CommunityUrl;
+      createLessonSuccessResult.DataCollection = []
+      createLessonSuccessResult.SocketId = body.SocketId;
+      createLessonSuccessResult.RequestGuid = body.RequestGuid;
+      result.getDataCollection().map(async (lesson: LessonDto)=>{
+        //retrieve userIds of all members of the channel
+        let courseDetails : ResponseModel<LessonDto> = await this.lessonFacade.getParentId(["lesson","section","channel"],lesson.Id);
+        let channelId = courseDetails.getDataCollection()[0].section.channelId;
+        let streamName = courseDetails.getDataCollection()[0].section.sectionType;
+        let channelName = courseDetails.getDataCollection()[0].section.channel.title;
+        console.log("ChannelId",JSON.stringify(channelId))
+
+        let pageSize: number = 1000,pageNumber: number = 1;
+        let userIds: number[] = await this.channelGroupFacade.getUserIdsByChannelId([channelId],pageSize,pageNumber);
+        console.log("Email ids are....",userIds);   
+        userIds.map(async (userId: number)=>{
+          let lessonNotificationData = {
+            "lessonId" : lesson.Id,
+            "lessonTitle" : lesson.title,
+            "streamName" : streamName,
+            "channelName" : channelName
+          }
+          
+          await this.utilityFacade.createNotification(userId,Label.newLesson,NotificationType.email,lesson.CreationDate,lessonNotificationData)
+        }) 
+        
+       })
+
+      
       
       // result.getDataCollection()[0].collaborators = [result.getDataCollection()[0].Id];
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
@@ -366,12 +404,47 @@ export class LessonRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
   @Put("/")
   async updateLesson(@Body() body:RequestModel<LessonDto>): Promise<ResponseModel<LessonDto>> {  //requiestmodel<LessonDto></LessonDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.lessonFacade.updateEntity(body);
+
+      body.DataCollection.map(async (lesson:LessonDto)=>{
+        let notification:NotificationDto = new NotificationDto();
+        let inviteUserSuccessResult: RequestModel<NotificationDto> = new RequestModel();
+        if(lesson.collaborators != null){
+          let previousCollaborators = (await this.getAllProductsByIds(lesson.Id)).getDataCollection()[0].collaborators;
+          let updatedCollaborator : number[] = lesson.collaborators;
+          let extraCollaborators : number[] = updatedCollaborator.filter(x => previousCollaborators.indexOf(x)=== -1);
+          extraCollaborators.forEach(async (id: number)=>{
+            let userDetails = await this.utilityFacade.getUserDetails([id]);
+            console.log("user details is ..............................")
+            console.log(userDetails);
+            notification.userId = id;
+            notification.label = Label.inviteCollaborator;
+            notification.notificationType = NotificationType.email;
+            notification.dateTime = lesson.ModifiedDate;
+            notification.notificationData = {"lessonOrCourseId":lesson.Id,"authorName":userDetails.DataCollection[0].userName,"lessonOrCourseName":lesson.title}
+            inviteUserSuccessResult.DataCollection.push(notification);
+            console.log("succesfully prepared notification object............",inviteUserSuccessResult)
+            this.sns_sqs.publishMessageToTopic("NOTIFICATION_ADD",inviteUserSuccessResult);
+            console.log("pushing notification to aws");
+          })  
+        }
+
+      })
+      let updateResult = await this.lessonFacade.updateEntity(body);
+      
+      //CODE FOR NOTIFICATION SERVICE INVOKING
+      // let lessonUpdates = body.DataCollection;
+      // lessonUpdates.map((lesson:LessonDto)=>{
+      //   lesson.lessonData.map((lessonData: LessonDataDto)=>{
+      //       lessonData.lessonDataReview.map()
+      //   })
+      // })
+      return updateResult;
+
     } catch (error) {
       await console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

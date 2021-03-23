@@ -15,4 +15,6 @@ export class LessonDataFacade extends AppService<LessonData,LessonDataDto> {
         super(http,lessonDataRepository, LessonData,LessonData,LessonDataDto, dto.lessonDataentityJson, dto.lessonDatadtoJson, dto.lessonDataentityToDtoJson, dto.lessonDatadtoToEntityJson);
         // super(lessonDataRepository, LessonData, {}, {}, {}, {});
     }
+
+    
 }
