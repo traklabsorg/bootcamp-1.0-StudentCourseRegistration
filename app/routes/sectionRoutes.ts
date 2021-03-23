@@ -294,7 +294,7 @@ export class SectionRoutes{
             "courseLink" : (section.sectionDetails.coverimage)?section.sectionDetails.coverimage:"sample link",
           }
           
-          await this.utilityFacade.createNotification(userId,Label.newCourse,NotificationType.email,section.CreationDate,sectionNotificationData)
+          await this.sectionFacade.createNotification(userId,Label.newCourse,NotificationType.email,section.CreationDate,sectionNotificationData)
         }) 
         
       })

@@ -173,17 +173,7 @@ public sns_sqs = SNS_SQS.getInstance();
         return result;
     }
 
-    async createNotification(userId?:number,label?:Label,notificationType?:NotificationType,creationDate ?: any,notificationData?:NotificationData):Promise<any>{
-        let notification:NotificationDto = new NotificationDto();
-        let notificationResult : RequestModel<NotificationDto> = new RequestModel();
-        notification.userId = userId,notification.label = label,notification.notificationType = NotificationType.email
-        notification.CreationDate = creationDate,notification.notificationData = notificationData;
-        notificationResult.DataCollection.push(notification)
-        console.log("pushing notification to aws.....",notificationResult);
-        this.sns_sqs.publishMessageToTopic("NOTIFICATION_ADD",notificationResult);
-
-        return null;
-    }
+    
 
 
 

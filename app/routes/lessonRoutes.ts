@@ -387,7 +387,7 @@ export class LessonRoutes{
             "channelName" : channelName
           }
           
-          await this.utilityFacade.createNotification(userId,Label.newLesson,NotificationType.email,lesson.CreationDate,lessonNotificationData)
+          await this.lessonFacade.createNotification(userId,Label.newLesson,NotificationType.email,lesson.CreationDate,lessonNotificationData)
         }) 
         
        })
