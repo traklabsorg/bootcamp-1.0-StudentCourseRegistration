@@ -194,8 +194,13 @@ export class LessonDataReviewRoutes{
   @Put("/")
   async updateLessonDataReview(@Body() body:RequestModel<LessonDataReviewDto>): Promise<ResponseModel<LessonDataReviewDto>> {  //requiestmodel<LessonDataReviewDto></LessonDataReviewDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.lessonDataReviewFacade.createOrUpdateLessonDataReview(body,false);
+      console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      let finalResult = await this.lessonDataReviewFacade.createOrUpdateLessonDataReview(body,false);
+      console.log("update completed...preparing notification....")
+      //code for lessonDataReview notification
+       
+      //end of code for lessonDataReview notification
+      return finalResult;
     } catch (error) {
       await console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

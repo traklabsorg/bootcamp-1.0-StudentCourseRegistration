@@ -44,8 +44,8 @@ export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDa
                 if(lessonDataReview.reviewStatus == false){
                 let lessonNotificationData = {"lessonId":lessonId,"lessonTitle":result.getDataCollection()[0].lesson.title,"lessonLink":result.getDataCollection()[0].lesson.contentDetails!=(undefined || null)?result.getDataCollection()[0].lesson.contentDetails.coverImage.ImageSrc:"SampleCoverImage"}
                 let courseNotificationData = {"courseId":courseId,"courseTitle":result.getDataCollection()[0].lesson.section.title,"courseLink":result.getDataCollection()[0].lesson.section.sectionDetails!=(undefined || null)?result.getDataCollection()[0].lesson.section.sectionDetails.coverimage:"SampleCoverImage"}
-                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,Label.lessonRejected,NotificationType.email,lessonDataReview.CreationDate,lessonNotificationData);  
-                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,Label.courseRejected,NotificationType.email,lessonDataReview.CreationDate,courseNotificationData);  
+                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.lessonRejected,NotificationType.email,lessonDataReview.CreationDate,lessonNotificationData);  
+                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.courseRejected,NotificationType.email,lessonDataReview.CreationDate,courseNotificationData);  
                   
                 }
                 

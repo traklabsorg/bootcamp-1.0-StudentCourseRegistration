@@ -19,12 +19,13 @@ import { UtilityFacade } from '../facade/utilityFacade';
 import { Label, NotificationDto, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
 import { ChannelUserFacade } from 'app/facade/channelUserFacade';
 import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
+import { ChannelFacade } from 'app/facade/channelFacade';
 
 
 @Controller('section')
 export class SectionRoutes{
 
-  constructor(private channelGroupFacade: ChannelGroupFacade,private channelUserFacade: ChannelUserFacade,private sectionFacade: SectionFacade, private lessonFacade:LessonFacade,private utilityFacade:UtilityFacade) { }
+  constructor(private channelFacade: ChannelFacade,private channelGroupFacade: ChannelGroupFacade,private channelUserFacade: ChannelUserFacade,private sectionFacade: SectionFacade, private lessonFacade:LessonFacade,private utilityFacade:UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['SECTION_ADD','SECTION_UPDATE','SECTION_DELETE'];
@@ -294,7 +295,7 @@ export class SectionRoutes{
             "courseLink" : (section.sectionDetails.coverimage)?section.sectionDetails.coverimage:"sample link",
           }
           
-          await this.sectionFacade.createNotification(userId,Label.newCourse,NotificationType.email,section.CreationDate,sectionNotificationData)
+          await this.sectionFacade.createNotification(userId,null,Label.newCourse,NotificationType.email,section.CreationDate,sectionNotificationData)
         }) 
         
       })
@@ -311,8 +312,30 @@ export class SectionRoutes{
   @Put("/")
   async updateSection(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      return await this.sectionFacade.updateEntity(body);
+      console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      let result = await this.sectionFacade.updateEntity(body);
+      //code for course featured notification
+      body.DataCollection.map(async (section : SectionDto)=>{
+        
+        if(section.sectionDetails.isFeatured){
+            let channelName = (await this.channelFacade.getByIds([section.channelId])).getDataCollection()[0].title;
+            //fetch userIDS BY channelID
+            let pageNumber = 1000,pageSize = 1;
+            let userIds = await this.channelGroupFacade.getUserIdsByChannelId([section.channelId],pageNumber,pageSize);
+            userIds.map(async (userId: number,index)=>{
+              let sectionFeaturedNotification = {
+                "courseId" : section.Id,
+                "courseTitle" : section.title,
+                "channelName" : channelName,
+                "courseLink" : `https://${body.CommunityUrl}/channels/${section.Id}`
+              }
+              await this.sectionFacade.createNotification(userId,null,Label.coursFeatured,NotificationType.email,section.CreationDate,sectionFeaturedNotification)
+            })
+        }
+
+      })
+          
+      return result;
     } catch (error) {
       await console.log("Error is....." + error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);

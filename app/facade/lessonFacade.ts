@@ -11,6 +11,7 @@ import { RequestModelQuery } from "submodules/platform-3.0-Entities/submodules/p
 import { ResponseModel } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel";
 import { ServiceOperationResultType } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType";
 import { Condition } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition";
+import { Filter } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/filter";
 // let dto = require('../../submodules/platform-3.0-Mappings/lessonDto"')
 let dto = require('../../submodules/platform-3.0-Mappings/lessonMapper')
 @Injectable()
@@ -19,6 +20,8 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
         super(http,lessonRepository, Lesson,Lesson,LessonDto, dto.lessonentityJson, dto.lessondtoJson, dto.lessonentityToDtoJson, dto.lessondtoToEntityJson);
         // super(lessonRepository, Lesson, {}, {}, {}, {});
     }
+
+    
 
     async findAllLessonRelatedDetailsWithAllReviewsByUserId(requestModel:RequestModelQuery,entityArrays?:Array<Array<string>>):Promise<any>{
         try { 
@@ -67,7 +70,28 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
           }
     }
 
-
+    async getChannelAndSectionDetailsByLessonId(lessonIds: number[],pageSize: number,pageNumber: number): Promise<ResponseModel<LessonDto>>{
+      console.log("about to fetch channel and section details ")
+      let requestModelQuery = new RequestModelQuery();
+      let entityArray = [["lesson","section"],["section","channel"]];
+      let filter = new Filter();
+      let conditions: Condition[] = [];
+      lessonIds.map((lessonId:number)=>{
+        let condition = new Condition();
+        condition.FieldName = 'Id';
+        condition.FieldValue = lessonId;
+        conditions.push(condition);
+      })
+      filter.Conditions = conditions;
+      requestModelQuery.Filter = filter;
+      requestModelQuery.Filter.PageInfo.PageSize = pageSize;
+      requestModelQuery.Filter.PageInfo.PageNumber = pageNumber;
+      requestModelQuery.Children = ["lesson"];
+      let data = await this.search(requestModelQuery,true,entityArray);
+      console.log("fetched data channel and section details............. ")
+      //console.log(JSON.stringify(data.getDataCollection()));
+      return data;   
+    }
 
 
     async findMaxId():Promise<Lesson>{

@@ -32,11 +32,11 @@ export class ChannelGroupFacade extends AppService<ChannelGroup,ChannelGroupDto>
             condition.FieldValue = channelId;
             filter.Conditions.push(condition);
         })
-        requestModelQuery.Children = ["channelGroup"];
+        requestModelQuery.Children = ["channelGroup"]; // which generic Repo  I am working on
         requestModelQuery.Filter = filter;
         requestModelQuery.Filter.PageInfo.PageSize = pageSize;
         requestModelQuery.Filter.PageInfo.PageNumber = pageNumber;
-        let result = await (await this.search(requestModelQuery,true,entityArray)).getDataCollection();
+        let result = (await this.search(requestModelQuery,true,entityArray)).getDataCollection();
         let userIds = [];
         result.map((data: ChannelGroupDto)=>{
             data.group.groupUser.map((groupUser: GroupUserDto)=>{

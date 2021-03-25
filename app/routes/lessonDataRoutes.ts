@@ -13,12 +13,15 @@ import { LessonDataDto } from '../../submodules/platform-3.0-Dtos/lessonDataDto'
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
+import { Label, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { LessonFacade } from 'app/facade/lessonFacade';
+import { LessonDto } from 'submodules/platform-3.0-Dtos/lessonDto';
 
 
 @Controller('lessonData')
 export class LessonDataRoutes{
 
-  constructor(private lessonDataFacade: LessonDataFacade) { }
+  constructor(private lessonFacade : LessonFacade,private lessonDataFacade: LessonDataFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['LESSONDATA_ADD','LESSONDATA_UPDATE','LESSONDATA_DELETE'];
@@ -185,6 +188,35 @@ export class LessonDataRoutes{
   async updateLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      //code for lessonSubmitted notification
+      let lessonData : LessonDataDto = body.DataCollection[0];
+      // if(lessonData.isSubmitted){
+      //   let lessonSubmittedNotification = {
+            
+      //   }
+      //   this.lessonDataFacade.createNotification()
+      // } 
+
+      //end of lessonSubmitted notification
+
+      //code for lessonPublished notification
+      if(lessonData.isReviewed){
+          console.log("lessonData is reviewed is true");
+          let pageSize = 1000,pageNumber = 1;
+          //join lesson,channel and section
+          let dataCollection :ResponseModel<LessonDto> = await this.lessonFacade.getChannelAndSectionDetailsByLessonId([lessonData.lessonId],pageSize,pageNumber);
+          let data = dataCollection.getDataCollection()[0];     
+           
+        let lessonPublishedNotification = {
+          "lessonId" : lessonData.lessonId,
+          "lessonTitle" : data.title,
+          "channelName" : data.section.channel.title,
+          "lessonLink" : `https://${body.CommunityUrl}/lesson/${lessonData.lessonId}`
+        }
+        this.lessonDataFacade.createNotification(lessonData.CreatedBy,null,Label.lessonPublished,NotificationType.email,lessonData.CreationDate,lessonPublishedNotification)
+      }
+      //end of lessonPublished notification
+      console.log("Executing update query..............")
       return await this.lessonDataFacade.updateEntity(body);
     } catch (error) {
       await console.log("Error is....." + error);
