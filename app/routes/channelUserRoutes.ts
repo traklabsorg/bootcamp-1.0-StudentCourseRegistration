@@ -328,7 +328,7 @@ export class ChannelUserRoutes implements OnModuleInit{
       let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
       let dataCollection = []
       body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
-        let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},${JSON.stringify(dto.channelUserAdditionalDetails)})`);
+        let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},'${JSON.stringify(dto.channelUserAdditionalDetails)}')`);
         dataCollection.push(final_result);
       })
       result.setDataCollection(dataCollection);
