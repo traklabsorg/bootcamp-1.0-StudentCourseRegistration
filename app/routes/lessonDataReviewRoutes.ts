@@ -18,6 +18,7 @@ import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-
 import { LessonDataFacade } from 'app/facade/lessonDataFacade';
 import { Label, NotificationDto, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
 import { LessonDataDto } from 'submodules/platform-3.0-Dtos/lessonDataDto';
+import { iif } from 'rxjs';
 
 
 @Controller('lessonDataReview')
@@ -197,9 +198,6 @@ export class LessonDataReviewRoutes{
       console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let finalResult = await this.lessonDataReviewFacade.createOrUpdateLessonDataReview(body,false);
       console.log("update completed...preparing notification....")
-      //code for lessonDataReview notification
-       
-      //end of code for lessonDataReview notification
       return finalResult;
     } catch (error) {
       await console.log("Error is....." + error);
