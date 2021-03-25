@@ -28,9 +28,9 @@ export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDa
         try {
             console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
             body.DataCollection.map(async (lessonDataReview:LessonDataReviewDto)=>{
-              if(lessonDataReview.reviewStatus != null && lessonDataReview.reviewStatus != undefined && lessonDataReview.reviewStatus != true){
+              if(lessonDataReview.reviewStatus != null && lessonDataReview.reviewStatus != undefined){
                 let requestModel = new RequestModelQuery();    
-                let entityArray = [["lessonData","lesson"],["lesson","section"]];
+                let entityArray = [["lessonData","lesson"],["lesson","section"],["section","channel"]];
                 requestModel.Children = ["lessonData"]
                 let condition = new Condition();
                 condition.FieldName = "Id"
@@ -42,12 +42,22 @@ export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDa
                 let lessonId = result.getDataCollection()[0].lesson.Id;
                 console.log("lessondataReview.reviewstatus is",lessonDataReview.reviewStatus);
                 if(lessonDataReview.reviewStatus == false){
-                let lessonNotificationData = {"lessonId":lessonId,"lessonTitle":result.getDataCollection()[0].lesson.title,"lessonLink":result.getDataCollection()[0].lesson.contentDetails!=(undefined || null)?result.getDataCollection()[0].lesson.contentDetails.coverImage.ImageSrc:"SampleCoverImage"}
-                let courseNotificationData = {"courseId":courseId,"courseTitle":result.getDataCollection()[0].lesson.section.title,"courseLink":result.getDataCollection()[0].lesson.section.sectionDetails!=(undefined || null)?result.getDataCollection()[0].lesson.section.sectionDetails.coverimage:"SampleCoverImage"}
-                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.lessonRejected,NotificationType.email,lessonDataReview.CreationDate,lessonNotificationData);  
-                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.courseRejected,NotificationType.email,lessonDataReview.CreationDate,courseNotificationData);  
-                  
+                    let lessonNotificationData = {"lessonId":lessonId,"lessonTitle":result.getDataCollection()[0].lesson.title,"lessonLink":result.getDataCollection()[0].lesson.contentDetails!=(undefined || null)?result.getDataCollection()[0].lesson.contentDetails.coverImage.ImageSrc:"SampleCoverImage"}
+                    let courseNotificationData = {"courseId":courseId,"courseTitle":result.getDataCollection()[0].lesson.section.title,"courseLink":result.getDataCollection()[0].lesson.section.sectionDetails!=(undefined || null)?result.getDataCollection()[0].lesson.section.sectionDetails.coverimage:"SampleCoverImage"}
+                    this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.lessonRejected,NotificationType.email,lessonDataReview.CreationDate,lessonNotificationData);  
+                    this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.courseRejected,NotificationType.email,lessonDataReview.CreationDate,courseNotificationData);
+               }
+               else{
+                //code for coursePublished notification
+                let coursePublishedNotification = {
+                  "courseId" : courseId,
+                  "courseTitle" : result.getDataCollection()[0].lesson.section.title,
+                  "channelName" : result.getDataCollection()[0].lesson.section.channel.title,
+                  "courseLink" : result.getDataCollection()[0].lesson.section.sectionDetails!=(undefined || null)?result.getDataCollection()[0].lesson.section.sectionDetails.coverimage:"SampleCoverImage"
                 }
+                this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.coursePublished,NotificationType.email,lessonDataReview.CreationDate,coursePublishedNotification);
+                //end of code for coursePublished notification
+               }
                 
               }
             })
