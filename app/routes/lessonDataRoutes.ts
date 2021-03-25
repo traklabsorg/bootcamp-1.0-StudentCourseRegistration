@@ -13,7 +13,7 @@ import { LessonDataDto } from '../../submodules/platform-3.0-Dtos/lessonDataDto'
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
-import { Label, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
+import { Label, LessonSubmitted, NotificationData, NotificationType } from 'submodules/platform-3.0-Dtos/notificationDto';
 import { LessonFacade } from 'app/facade/lessonFacade';
 import { LessonDto } from 'submodules/platform-3.0-Dtos/lessonDto';
 
@@ -188,16 +188,37 @@ export class LessonDataRoutes{
   async updateLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      //code for lessonSubmitted notification
+      
       let lessonData : LessonDataDto = body.DataCollection[0];
-      // if(lessonData.isSubmitted){
-      //   let lessonSubmittedNotification = {
-            
-      //   }
-      //   this.lessonDataFacade.createNotification()
-      // } 
+      if(lessonData.isSubmitted){
+          //code for lessonSubmitted notification
+          let userData = await this.lessonDataFacade.getGroupAndUserDetailsByUserId(lessonData.CreatedBy)    
+          //console.log(userData);
+          let channelData = await this.lessonFacade.getChannelAndSectionDetailsByLessonId([lessonData.lessonId],1000,1);
+          // let courseId = channelData.getDataCollection()[0].sectionId;
+          // let learnerName = userData[0].learner_first_name;
+          let lessonSubmittedNotification : LessonSubmitted= {}; 
+          userData.map((user: any)=>{
+            lessonSubmittedNotification.lessonId = lessonData.lessonId;
+            lessonSubmittedNotification.learnerName = user.learner_first_name;
+            lessonSubmittedNotification.lessonTitle = channelData.getDataCollection()[0].title;
+            lessonSubmittedNotification.lessonLink =  `https://${body.CommunityUrl}//lesson/${lessonData.lessonId}`; 
+            this.lessonDataFacade.createNotification(user.group_admin_user_id,null,Label.lessonSubmitted,NotificationType.email,lessonData.CreationDate,lessonSubmittedNotification)
+          })
+        //end of lessonSubmitted notification
+        //code for courseSubmitted notification
+        let courseSubmittedNotification : NotificationData = {};
+        userData.map((user: any)=>{
+          courseSubmittedNotification.courseId = channelData.getDataCollection()[0].sectionId;
+          courseSubmittedNotification.learnerName = user.learner_first_name;
+          courseSubmittedNotification.courseTitle = channelData.getDataCollection()[0].section.title;
+          courseSubmittedNotification.courseLink =  `https://${body.CommunityUrl}//courses/${channelData.getDataCollection()[0].sectionId}`; 
+          this.lessonDataFacade.createNotification(user.group_admin_user_id,null,Label.courseSubmitted,NotificationType.email,lessonData.CreationDate,courseSubmittedNotification)
+        })
+       //end of code for courseSubmitted notification
+      } 
 
-      //end of lessonSubmitted notification
+      
 
       //code for lessonPublished notification
       if(lessonData.isReviewed){
