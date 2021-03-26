@@ -9,6 +9,7 @@
     "start:dev": "NODE_ENV=dev nest start",
     "start:prod": "NODE_ENV=prod nest start",
     "start:qa": "NODE_ENV=qa nest start",
+    "start:debug" :"NODE_ENV=local nest start --debug --watch",
     "start:dev:autosearch": "NODE_ENV=local nest build --webpack --webpackPath webpack-hmr.config.js",
     "add-migration": "NODE_ENV=local ts-node ./node_modules/typeorm/cli.js migration:generate -n",
     "update-database": "NODE_ENV=local ts-node ./node_modules/typeorm/cli.js migration:run",
