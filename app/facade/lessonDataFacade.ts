@@ -7,6 +7,7 @@ import AppService from "../../submodules/platform-3.0-Entities/submodules/platfo
 // import { LessonData } from "app/smartup_entities/lessonData";
 // import AppService from "smartup_framework/AppService/AppService";
 import { Repository } from "typeorm";
+import { UserRoleType } from "submodules/platform-3.0-Dtos/submodules/platform-3.0-Common/common/UserRoleType";
 // let dto = require('../../submodules/platform-3.0-Mappings/lessonDataDto"')
 let dto = require('../../submodules/platform-3.0-Mappings/lessonDataMapper')
 @Injectable()
@@ -16,5 +17,22 @@ export class LessonDataFacade extends AppService<LessonData,LessonDataDto> {
         // super(lessonDataRepository, LessonData, {}, {}, {}, {});
     }
 
-    
+    async getGroupAndUserDetailsByUserId(userId:number){
+        let data = await this.genericRepository.query(`SELECT 
+                                                    users2.id as group_admin_user_id,
+                                                    group_users1.group_id as user_groupId,
+                                                    users2.user_details ->> 'firstName' group_admin_first_name,
+                                                    users2.user_details ->> 'lastName' group_admin_last_name,
+                                                    
+                                                    users1.user_details ->> 'firstName' learner_first_name,
+                                                    users1.user_details ->> 'lastName' learner_last_name
+                                                FROM
+                                                    public.users users1
+                                                    JOIN public."groupUsers" group_users1 ON (group_users1.user_id = users1.id)
+                                                    JOIN public."groupUsers" group_users2 ON (${UserRoleType.GroupAdmin} = Any(group_users2.role_ids) and group_users2.group_id = group_users1.group_id ) 
+                                                    JOIN public.users users2 ON (users2.id = group_users2.user_id)
+                                                WHERE users1.id = ${userId}`
+                                                )
+       return data;
+    }
 }
