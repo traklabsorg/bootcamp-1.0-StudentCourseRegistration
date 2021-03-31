@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
+import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -24,6 +24,7 @@ import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 import { Lesson } from 'submodules/platform-3.0-Entities/lesson';
 import { SectionFacade } from 'app/facade/sectionFacade';
 import { SectionDto } from 'submodules/platform-3.0-Dtos/sectionDto';
+import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
 
 let mapperDto = require('../../submodules/platform-3.0-Mappings/lessonMapper');
 
@@ -206,14 +207,44 @@ export class LessonRoutes{
     try {
       console.log("Inside findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      console.log("request model ready...")
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      console.log("request model ready2...")
       let conditions: Condition[] = requestModel.Filter.Conditions;
       let userId:number;
+      let communityId: number = null;
+      // extracting communityId from request model
+      console.log("preparing to extract communityId......")
+      requestModel.Filter.Conditions.map((condition: Condition)=>{
+        
+        if(condition.FieldName == "communityId"){
+          communityId = condition.FieldValue;
+        }   
+      })
+      console.log("extracted communityId........")
+      // extracting userId from request model
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         if(condition.FieldName == 'userId')
         userId = condition.FieldValue;
       })
+      console.log("extracted userId........")
+      // //code to check if user has access to this lesson
+      // let channelIds = await this.lessonFacade.genericRepository.query(`select distinct("channelUsers".channel_id) from public."lessons" left join
+      //                                                                   public."sections" on "lessons".section_id = "sections".id left join 
+      //                                                                   -- public."channels" on "sections".channel_id = "channels".id join 
+      //                                                                   public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
+      //                                                                   public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
+      //                                                                   public."groups" on "channelGroups".group_id = "groups".id left join 
+      //                                                                   public."groupUsers" on "groupUsers".group_id = "groups".id
+      //                                                                   where "groups".community_id = 29 and 
+      //                                                                   ("channelUsers".user_id = 109 or "groupUsers".user_id = 109 or 23 = Any("groupUsers".role_ids) 
+      //                                                                     or "lessons".created_by = 109)`
+      //                                                                  );
+       
+      // console.log(channelIds);  
+      // //end of authentication code
+      
       conditions = conditions.filter((condition: Condition) => {
         return condition.FieldName !== "userId";
       });
@@ -248,6 +279,7 @@ export class LessonRoutes{
 
       return result;
     } catch (error) {
+      
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -294,6 +326,7 @@ export class LessonRoutes{
       // }
       // if(requestModel.Children.indexOf('lesson')<=-1)
       //   requestModel.Children.unshift('lesson');
+      
       let entityArrays = [['lesson','lessonData'],['lessonData','lessonDataReview'],['lessonData','lessonDataUser']];
       let result = await this.lessonFacade.findAllLessonRelatedDetailsWithAllReviewsByUserId(requestModel,entityArrays)
       return result;
@@ -302,6 +335,214 @@ export class LessonRoutes{
     }
   }
 
+ // endpoint to get lesson interaction report
+ @Get("/getLessonInteractionReport/:pageSize/:pageNumber")
+ async getLessonInteractionReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonInteractionReportDto>>{
+   try {
+     console.log("getLessonInteractionReport ......group by pageSize & pageNumber");
+     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+    //  requestModel.Filter.PageInfo.PageSize = pageSize;
+    //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+     let given_children_array = requestModel.Children;
+     let communityId : number = null;
+     let startDate : string,endDate : string;
+     let memberIds : string;
+     let allGroups : boolean;
+     let allMembers : boolean;
+      
+     // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+     requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+      switch(condition.FieldName){
+        case 'communityId':
+          communityId = condition.FieldValue;
+          break;
+        case 'startDate' :
+          startDate = condition.FieldValue;
+          break;
+        case 'endDate' :
+          endDate = condition.FieldValue;
+          break;
+        case 'memberIds' :
+          memberIds = condition.FieldValue;
+          break;
+        case 'allGroups' :
+          allGroups = condition.FieldValue;
+          break;
+        case 'allMembers' :
+          allMembers = condition.FieldValue;
+          break;    
+      }
+   })
+
+        //applying query on retrieved data fields 
+        let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_interaction_report(${communityId},
+                                                                          '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                           ${pageNumber},${pageSize})`);     
+        let final_result_updated = [];
+        let result:ResponseModel<LessonInteractionReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+          
+        queryResult.forEach((entity:any)=>{
+            entity = objectMapper(entity,mapperDto.lessonInteractionReportMapper); // mapping to camel case
+
+            final_result_updated.push(entity)
+          })
+        result.setDataCollection(final_result_updated);
+        return result;
+
+     // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+     // console.log("isSubset is......" + isSubset);
+     // if (!isSubset) {
+     //   console.log("Inside Condition.....")
+     //   requestModel.Children = this.lesson_children_array;
+     // }
+     // if(requestModel.Children.indexOf('lesson')<=-1)
+     //   requestModel.Children.unshift('lesson');
+     
+     
+   } catch (error) {
+     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+   }
+ }
+
+
+  // endpoint to get lesson interaction overview
+  @Get("/getLessonInteractionOverview/:pageSize/:pageNumber")
+  async getLessonInteractionOverview(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonInteractionOverviewDto>>{
+    try {
+      console.log("getLessonInteractionOverview ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let startDate : string,endDate : string;
+      let memberIds : string;
+      let allGroups : boolean;
+      let allMembers : boolean;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'startDate' :
+           startDate = condition.FieldValue;
+           break;
+         case 'endDate' :
+           endDate = condition.FieldValue;
+           break;
+         case 'memberIds' :
+           memberIds = condition.FieldValue;
+           break;
+         case 'allGroups' :
+           allGroups = condition.FieldValue;
+           break;
+         case 'allMembers' :
+           allMembers = condition.FieldValue;
+           break;    
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_interaction_overview(${communityId},
+                                                                           '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            ${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<LessonInteractionOverviewDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,mapperDto.lessonInteractionOverviewMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+   // endpoint to get lesson publication report
+   @Get("/getLessonPublicationReport/:pageSize/:pageNumber")
+   async getLessonPublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonInteractionOverviewDto>>{
+     try {
+       console.log("getLessonInteractionOverview ......group by pageSize & pageNumber");
+       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      //  requestModel.Filter.PageInfo.PageSize = pageSize;
+      //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+       let given_children_array = requestModel.Children;
+       let communityId : number = null;
+       let startDate : string,endDate : string;
+       let memberIds : string;
+       let allGroups : boolean;
+       let allMembers : boolean;
+        
+       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        switch(condition.FieldName){
+          case 'communityId':
+            communityId = condition.FieldValue;
+            break;
+          case 'startDate' :
+            startDate = condition.FieldValue;
+            break;
+          case 'endDate' :
+            endDate = condition.FieldValue;
+            break;
+          case 'memberIds' :
+            memberIds = condition.FieldValue;
+            break;
+          case 'allGroups' :
+            allGroups = condition.FieldValue;
+            break;
+          case 'allMembers' :
+            allMembers = condition.FieldValue;
+            break;    
+        }
+     })
+  
+          //applying query on retrieved data fields 
+          let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_interaction_overview(${communityId},
+                                                                            '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                             ${pageNumber},${pageSize})`);     
+          let final_result_updated = [];
+          let result:ResponseModel<LessonInteractionOverviewDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+            
+          queryResult.forEach((entity:any)=>{
+              entity = objectMapper(entity,mapperDto.lessonInteractionOverviewMapper); // mapping to camel case
+  
+              final_result_updated.push(entity)
+            })
+          result.setDataCollection(final_result_updated);
+          return result;
+  
+       // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+       // console.log("isSubset is......" + isSubset);
+       // if (!isSubset) {
+       //   console.log("Inside Condition.....")
+       //   requestModel.Children = this.lesson_children_array;
+       // }
+       // if(requestModel.Children.indexOf('lesson')<=-1)
+       //   requestModel.Children.unshift('lesson');
+       
+       
+     } catch (error) {
+       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+   }
 
   @Get('/getTopLearners/:pageSize/:pageNumber')
   async getTopLearnersByChannnelId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{

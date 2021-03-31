@@ -29,6 +29,8 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
             let orderBy = 'ASC';
             let orderByField = 'Id';
             let userId:number = null;
+            
+            // extracting userId from request model
             for(let i=0;i<requestModel.Filter.Conditions.length;i++){
                 if(requestModel.Filter.Conditions[i].FieldName == "userId"){
                     userId = requestModel.Filter.Conditions[i].FieldValue;
@@ -36,32 +38,35 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
                     break;
                 }
             }
-            let isCaseInsensitiveSearch = false;
-            if (requestModel != null && requestModel.Filter != null) {
-              orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
-              orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
-      
-            }
             
-            let queryField = this.genericRepository.createQueryBuilder(entityArrays[0][0]);
+           
+            // //code for fetching lesson details
+            // let isCaseInsensitiveSearch = false;
+            // if (requestModel != null && requestModel.Filter != null) {
+            //   orderBy = !requestModel.Filter.IsOrderByFieldAsc ? 'DESC' : orderBy;
+            //   orderByField = requestModel.Filter.OrderByField != null ? requestModel.Filter.OrderByField : orderByField;
       
-            if (entityArrays!= null) {
-              entityArrays.forEach((entityArray:Array<string>)=>{
-                queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
-              })
-            }
+            // }
+            
+            // let queryField = this.genericRepository.createQueryBuilder(entityArrays[0][0]);
       
-            queryField = await queryField.where(":id =  any(lesson.collaborators)", { id: userId })
-            queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
-            let result:any = await queryField.getMany();
+            // if (entityArrays!= null) {
+            //   entityArrays.forEach((entityArray:Array<string>)=>{
+            //     queryField = queryField.leftJoinAndSelect(entityArray[0] + "." + entityArray[1], entityArray[1]);
+            //   })
+            // }
+      
+            // queryField = await queryField.where(":id =  any(lesson.collaborators)", { id: userId })
+            // queryField = await this.divideQueryByPageSizeAndPageNo(requestModel,queryField);
+            // let result:any = await queryField.getMany();
 
-            let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
-            console.log("Setting result......");
-            await final_result.setDataCollection(result);
-            // console.log("Final_result is......" + JSON.stringify(final_result));
+            // let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+            // console.log("Setting result......");
+            // await final_result.setDataCollection(result);
+            // // console.log("Final_result is......" + JSON.stringify(final_result));
             
-            console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
-            return final_result;
+            // console.log("\n\n\n\n\nresult1 is....." + JSON.stringify(result));
+            //return final_result;
       
           }
           catch (err) {

@@ -187,13 +187,15 @@ export class LessonDataRoutes{
   @Put("/")
   async updateLessonData(@Body() body:RequestModel<LessonDataDto>): Promise<ResponseModel<LessonDataDto>> {  //requiestmodel<LessonDataDto></LessonDataDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       
       let lessonData : LessonDataDto = body.DataCollection[0];
       if(lessonData.isSubmitted){
+          console.log("lesson data isSubmitted is true.......")  
           //code for lessonSubmitted notification
-          let userData = await this.lessonDataFacade.getGroupAndUserDetailsByUserId(lessonData.CreatedBy)    
-          //console.log(userData);
+          let creatorId = (await this.lessonDataFacade.getByIds([lessonData.Id])).getDataCollection()[0].CreatedBy;
+          let userData = await this.lessonDataFacade.getGroupAndUserDetailsByUserId(creatorId);    
+          console.log("User Data is.................",userData);
           let channelData = await this.lessonFacade.getChannelAndSectionDetailsByLessonId([lessonData.lessonId],1000,1);
           // let courseId = channelData.getDataCollection()[0].sectionId;
           // let learnerName = userData[0].learner_first_name;
@@ -206,6 +208,7 @@ export class LessonDataRoutes{
             this.lessonDataFacade.createNotification(user.group_admin_user_id,null,Label.lessonSubmitted,NotificationType.email,lessonData.CreationDate,lessonSubmittedNotification)
           })
         //end of lessonSubmitted notification
+        console.log("Lesson Submitted Notification working.....")
         //code for courseSubmitted notification
         let courseSubmittedNotification : NotificationData = {};
         userData.map((user: any)=>{
@@ -215,6 +218,7 @@ export class LessonDataRoutes{
           courseSubmittedNotification.courseLink =  `https://${body.CommunityUrl}//courses/${channelData.getDataCollection()[0].sectionId}`; 
           this.lessonDataFacade.createNotification(user.group_admin_user_id,null,Label.courseSubmitted,NotificationType.email,lessonData.CreationDate,courseSubmittedNotification)
         })
+        console.log("Course Submitted Notification working.....")
        //end of code for courseSubmitted notification
       } 
 
