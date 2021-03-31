@@ -77,7 +77,7 @@ import { join } from 'path';
         cli: {
           migrationsDir: 'app/migration'
         },
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true,
         logger: 'advanced-console',
         logging: 'all',
