@@ -6,7 +6,7 @@ import { plainToClass } from 'class-transformer';
 // import { Client, ClientKafka, EventPattern, MessagePattern } from '@nestjs/microservices';
 // import { microserviceConfig } from 'app/microserviceConfig';
 import { Request } from 'express';
-import { ChannelDto } from '../../submodules/platform-3.0-Dtos/channelDto';
+import { ChannelDetailsReportDto, ChannelDto } from '../../submodules/platform-3.0-Dtos/channelDto';
 import { RequestModel} from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
@@ -18,8 +18,12 @@ import { NotificationDto, Label, NotificationType } from 'submodules/platform-3.
 import { GROUP_MICROSERVICE_URI } from 'config';
 import { UserDto } from 'submodules/platform-3.0-Dtos/userDto';
 import { UtilityFacade } from 'app/facade/utilityFacade';
+import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
+import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
+let mapperDto = require('../../submodules/platform-3.0-Mappings/channelMapper');
 // let dto_maps = require('../smartup_dtos/channelDto')
 var objectMapper = require('object-mapper');
+
 
 @Controller('channel')
 export class ChannelRoutes implements OnModuleInit{
@@ -307,7 +311,79 @@ export class ChannelRoutes implements OnModuleInit{
     }
   }
 
-
+ 
+ // endpoint to get channel details report
+   @Get("/getChannelDetailsReport/:pageSize/:pageNumber")
+   async getChannelDetailsReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<ChannelDetailsReportDto>>{
+     try {
+       console.log("getChannelDetailsReport ......group by pageSize & pageNumber");
+       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      //  requestModel.Filter.PageInfo.PageSize = pageSize;
+      //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+       let given_children_array = requestModel.Children;
+       let communityId : number = null;
+       let startDate : string,endDate : string;
+       let memberIds : string;
+       let allGroups : boolean;
+       let allMembers : boolean;
+       let reportName : string;
+        
+       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+       requestModel.Filter.Conditions.forEach((condition: Condition)=>{
+        switch(condition.FieldName){
+          case 'communityId':
+            communityId = condition.FieldValue;
+            break;
+          case 'startDate' :
+            startDate = condition.FieldValue;
+            break;
+          case 'endDate' :
+            endDate = condition.FieldValue;
+            break;
+          case 'memberIds' :
+            memberIds = condition.FieldValue;
+            break;
+          case 'allGroups' :
+            allGroups = condition.FieldValue;
+            break;
+          case 'allMembers' :
+            allMembers = condition.FieldValue;
+            break;
+          case 'reportName' :
+            reportName = condition.FieldValue;
+            break;      
+        }
+     })
+  
+          //applying query on retrieved data fields 
+          let queryResult = await this.channelFacade.genericRepository.query(`SELECT * from public.fn_get_channel_details_report(${communityId},
+                                                                            '${startDate}','${endDate}','${reportName}','${memberIds}',${allGroups}, ${allMembers},
+                                                                             ${pageNumber},${pageSize})`);     
+          let final_result_updated = [];
+          let result:ResponseModel<ChannelDetailsReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+            
+          queryResult.forEach((entity:any)=>{
+              entity = objectMapper(entity,mapperDto.channelDetailsReportMapper); // mapping to camel case
+  
+              final_result_updated.push(entity)
+            })
+          result.setDataCollection(final_result_updated);
+          return result;
+  
+       // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+       // console.log("isSubset is......" + isSubset);
+       // if (!isSubset) {
+       //   console.log("Inside Condition.....")
+       //   requestModel.Children = this.lesson_children_array;
+       // }
+       // if(requestModel.Children.indexOf('lesson')<=-1)
+       //   requestModel.Children.unshift('lesson');
+       
+       
+     } catch (error) {
+       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+   }
   
 
 

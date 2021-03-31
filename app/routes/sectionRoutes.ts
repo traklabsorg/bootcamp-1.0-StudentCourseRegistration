@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { SectionDto } from '../../submodules/platform-3.0-Dtos/sectionDto';
+import { SectionDto, SectionInteractionReportDto, SectionPublicationReportDto } from '../../submodules/platform-3.0-Dtos/sectionDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -20,7 +20,8 @@ import { Label, NotificationDto, NotificationType } from 'submodules/platform-3.
 import { ChannelUserFacade } from 'app/facade/channelUserFacade';
 import { ChannelGroupFacade } from 'app/facade/channelGroupFacade';
 import { ChannelFacade } from 'app/facade/channelFacade';
-
+import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
+let mapperDto = require('../../submodules/platform-3.0-Mappings/sectionMapper');
 
 @Controller('section')
 export class SectionRoutes{
@@ -267,6 +268,147 @@ export class SectionRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
+   // endpoint to get course interaction report
+ @Get("/getCourseInteractionReport/:pageSize/:pageNumber")
+ async getCourseInteractionReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<SectionInteractionReportDto>>{
+   try {
+     console.log("getCourseInteractionReport ......group by pageSize & pageNumber");
+     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+    //  requestModel.Filter.PageInfo.PageSize = pageSize;
+    //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+     let given_children_array = requestModel.Children;
+     let communityId : number = null;
+     let startDate : string,endDate : string;
+     let memberIds : string;
+     let allGroups : boolean;
+     let allMembers : boolean;
+      
+     // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+     requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+      switch(condition.FieldName){
+        case 'communityId':
+          communityId = condition.FieldValue;
+          break;
+        case 'startDate' :
+          startDate = condition.FieldValue;
+          break;
+        case 'endDate' :
+          endDate = condition.FieldValue;
+          break;
+        case 'memberIds' :
+          memberIds = condition.FieldValue;
+          break;
+        case 'allGroups' :
+          allGroups = condition.FieldValue;
+          break;
+        case 'allMembers' :
+          allMembers = condition.FieldValue;
+          break;    
+      }
+   })
+
+        //applying query on retrieved data fields 
+        let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_course_interaction_report(${communityId},
+                                                                          '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                           ${pageNumber},${pageSize})`);     
+        let final_result_updated = [];
+        let result:ResponseModel<SectionInteractionReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+          
+        queryResult.forEach((entity:any)=>{
+            entity = objectMapper(entity,mapperDto.sectionInteractionReportMapper); // mapping to camel case
+
+            final_result_updated.push(entity)
+          })
+        result.setDataCollection(final_result_updated);
+        return result;
+
+     // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+     // console.log("isSubset is......" + isSubset);
+     // if (!isSubset) {
+     //   console.log("Inside Condition.....")
+     //   requestModel.Children = this.lesson_children_array;
+     // }
+     // if(requestModel.Children.indexOf('lesson')<=-1)
+     //   requestModel.Children.unshift('lesson');
+     
+     
+   } catch (error) {
+     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+   }
+ }
+
+
+  // endpoint to get course publication report
+  @Get("/getCoursePublicationReport/:pageSize/:pageNumber")
+  async getCoursePublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<SectionPublicationReportDto>>{
+    try {
+      console.log("getCourseInteractionOverview ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let startDate : string,endDate : string;
+      let memberIds : string;
+      let allGroups : boolean;
+      let allMembers : boolean;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'startDate' :
+           startDate = condition.FieldValue;
+           break;
+         case 'endDate' :
+           endDate = condition.FieldValue;
+           break;
+         case 'memberIds' :
+           memberIds = condition.FieldValue;
+           break;
+         case 'allGroups' :
+           allGroups = condition.FieldValue;
+           break;
+         case 'allMembers' :
+           allMembers = condition.FieldValue;
+           break;    
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_course_publication_report(${communityId},
+                                                                           '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            ${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<SectionPublicationReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,mapperDto.sectionPublicationReportMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
   @Post("/") 
   async createSection(@Body() body:RequestModel<SectionDto>): Promise<ResponseModel<SectionDto>> {  //requiestmodel<SectionDto></SectionDto>....Promise<ResponseModel<Grou[pDto>>]

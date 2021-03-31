@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
+import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -477,7 +477,7 @@ export class LessonRoutes{
 
    // endpoint to get lesson publication report
    @Get("/getLessonPublicationReport/:pageSize/:pageNumber")
-   async getLessonPublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonInteractionOverviewDto>>{
+   async getLessonPublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonPublicationReportDto>>{
      try {
        console.log("getLessonInteractionOverview ......group by pageSize & pageNumber");
        let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
@@ -515,14 +515,14 @@ export class LessonRoutes{
      })
   
           //applying query on retrieved data fields 
-          let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_interaction_overview(${communityId},
+          let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_publication_report(${communityId},
                                                                             '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
                                                                              ${pageNumber},${pageSize})`);     
           let final_result_updated = [];
-          let result:ResponseModel<LessonInteractionOverviewDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+          let result:ResponseModel<LessonPublicationReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
             
           queryResult.forEach((entity:any)=>{
-              entity = objectMapper(entity,mapperDto.lessonInteractionOverviewMapper); // mapping to camel case
+              entity = objectMapper(entity,mapperDto.lessonPublicationReportMapper); // mapping to camel case
   
               final_result_updated.push(entity)
             })
