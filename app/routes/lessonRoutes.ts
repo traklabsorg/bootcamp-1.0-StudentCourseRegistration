@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
+import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -25,8 +25,14 @@ import { Lesson } from 'submodules/platform-3.0-Entities/lesson';
 import { SectionFacade } from 'app/facade/sectionFacade';
 import { SectionDto } from 'submodules/platform-3.0-Dtos/sectionDto';
 import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
+import { QuizQuestionReportDto, QuizScoreReportDto } from 'submodules/platform-3.0-Dtos/quizReportDtos';
+import { PollReportDto } from 'submodules/platform-3.0-Dtos/pollReportDto';
+import { PendingCompletionReportDto } from 'submodules/platform-3.0-Dtos/pendingCompletionReportDto';
 
 let mapperDto = require('../../submodules/platform-3.0-Mappings/lessonMapper');
+let quizMapperDto = require('../../submodules/platform-3.0-Mappings/quizReportMappers');
+let pollMapperDto = require('../../submodules/platform-3.0-Mappings/pollReportMapper');
+let pendingCompletionMapperDto = require('../../submodules/platform-3.0-Mappings/pendingCompletionReportMapper');
 
 
 @Controller('lesson')
@@ -477,7 +483,7 @@ export class LessonRoutes{
 
    // endpoint to get lesson publication report
    @Get("/getLessonPublicationReport/:pageSize/:pageNumber")
-   async getLessonPublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonInteractionOverviewDto>>{
+   async getLessonPublicationReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonPublicationReportDto>>{
      try {
        console.log("getLessonInteractionOverview ......group by pageSize & pageNumber");
        let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
@@ -515,14 +521,14 @@ export class LessonRoutes{
      })
   
           //applying query on retrieved data fields 
-          let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_interaction_overview(${communityId},
+          let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_lesson_publication_report(${communityId},
                                                                             '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
                                                                              ${pageNumber},${pageSize})`);     
           let final_result_updated = [];
-          let result:ResponseModel<LessonInteractionOverviewDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+          let result:ResponseModel<LessonPublicationReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
             
           queryResult.forEach((entity:any)=>{
-              entity = objectMapper(entity,mapperDto.lessonInteractionOverviewMapper); // mapping to camel case
+              entity = objectMapper(entity,mapperDto.lessonPublicationReportMapper); // mapping to camel case
   
               final_result_updated.push(entity)
             })
@@ -543,6 +549,288 @@ export class LessonRoutes{
        throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
      }
    }
+
+
+   // endpoint to get quiz question report
+ @Get("/getQuizQuestionReport/:pageSize/:pageNumber")
+ async getQuizQuestionReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<QuizQuestionReportDto>>{
+   try {
+     console.log("getQuizQuestionReport ......group by pageSize & pageNumber");
+     let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+    //  requestModel.Filter.PageInfo.PageSize = pageSize;
+    //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+     let given_children_array = requestModel.Children;
+     let communityId : number = null;
+     let startDate : string,endDate : string;
+     let memberIds : string;
+     let allGroups : boolean;
+     let allMembers : boolean;
+      
+     // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+     requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+      switch(condition.FieldName){
+        case 'communityId':
+          communityId = condition.FieldValue;
+          break;
+        case 'startDate' :
+          startDate = condition.FieldValue;
+          break;
+        case 'endDate' :
+          endDate = condition.FieldValue;
+          break;
+        case 'memberIds' :
+          memberIds = condition.FieldValue;
+          break;
+        case 'allGroups' :
+          allGroups = condition.FieldValue;
+          break;
+        case 'allMembers' :
+          allMembers = condition.FieldValue;
+          break;    
+      }
+   })
+
+        //applying query on retrieved data fields 
+        let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_quiz_question_report(${communityId},
+                                                                          '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                           ${pageNumber},${pageSize})`);     
+        let final_result_updated = [];
+        let result:ResponseModel<QuizQuestionReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+          
+        queryResult.forEach((entity:any)=>{
+            entity = objectMapper(entity,quizMapperDto.quizQuestionReportMapper); // mapping to camel case
+
+            final_result_updated.push(entity)
+          })
+        result.setDataCollection(final_result_updated);
+        return result;
+
+     // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+     // console.log("isSubset is......" + isSubset);
+     // if (!isSubset) {
+     //   console.log("Inside Condition.....")
+     //   requestModel.Children = this.lesson_children_array;
+     // }
+     // if(requestModel.Children.indexOf('lesson')<=-1)
+     //   requestModel.Children.unshift('lesson');
+     
+     
+   } catch (error) {
+     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+   }
+ }
+
+
+
+  // endpoint to get quiz score report
+  @Get("/getQuizScoreReport/:pageSize/:pageNumber")
+  async getQuizScoreReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<QuizScoreReportDto>>{
+    try {
+      console.log("getQuizScoreReport ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let startDate : string,endDate : string;
+      let memberIds : string;
+      let allGroups : boolean;
+      let allMembers : boolean;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'startDate' :
+           startDate = condition.FieldValue;
+           break;
+         case 'endDate' :
+           endDate = condition.FieldValue;
+           break;
+         case 'memberIds' :
+           memberIds = condition.FieldValue;
+           break;
+         case 'allGroups' :
+           allGroups = condition.FieldValue;
+           break;
+         case 'allMembers' :
+           allMembers = condition.FieldValue;
+           break;    
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_quiz_score_report(${communityId},
+                                                                           '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            ${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<QuizScoreReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,quizMapperDto.quizScoreReportMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  // endpoint to get poll report
+  @Get("/getPollReport/:pageSize/:pageNumber")
+  async getPollReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<PollReportDto>>{
+    try {
+      console.log("getPollReport ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let startDate : string,endDate : string;
+      let memberIds : string;
+      let allGroups : boolean;
+      let allMembers : boolean;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'startDate' :
+           startDate = condition.FieldValue;
+           break;
+         case 'endDate' :
+           endDate = condition.FieldValue;
+           break;
+         case 'memberIds' :
+           memberIds = condition.FieldValue;
+           break;
+         case 'allGroups' :
+           allGroups = condition.FieldValue;
+           break;
+         case 'allMembers' :
+           allMembers = condition.FieldValue;
+           break;    
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_poll_report(${communityId},
+                                                                           '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            ${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<PollReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,pollMapperDto.pollReportMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  // endpoint to get Pending completion report
+  @Get("/getPendingCompletionReport/:pageSize/:pageNumber")
+  async getPendingCompletionReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<PendingCompletionReportDto>>{
+    try {
+      console.log("getPendingCompletion ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let startDate : string,endDate : string;
+      let memberIds : string;
+      let allGroups : boolean;
+      let allMembers : boolean;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'startDate' :
+           startDate = condition.FieldValue;
+           break;
+         case 'endDate' :
+           endDate = condition.FieldValue;
+           break;
+         case 'memberIds' :
+           memberIds = condition.FieldValue;
+           break;
+         case 'allGroups' :
+           allGroups = condition.FieldValue;
+           break;
+         case 'allMembers' :
+           allMembers = condition.FieldValue;
+           break;    
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_pending_completion_report(${communityId},
+                                                                           '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            ${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<PendingCompletionReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,pendingCompletionMapperDto.pendingCompletionReportMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
   @Get('/getTopLearners/:pageSize/:pageNumber')
   async getTopLearnersByChannnelId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
