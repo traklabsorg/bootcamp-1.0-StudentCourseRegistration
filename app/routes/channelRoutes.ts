@@ -349,15 +349,15 @@ export class ChannelRoutes implements OnModuleInit{
           case 'allMembers' :
             allMembers = condition.FieldValue;
             break;
-          case 'reportName' :
-            reportName = condition.FieldValue;
-            break;      
+          // case 'reportName' :
+          //   reportName = condition.FieldValue;
+          //   break;      
         }
      })
   
           //applying query on retrieved data fields 
           let queryResult = await this.channelFacade.genericRepository.query(`SELECT * from public.fn_get_channel_details_report(${communityId},
-                                                                            '${startDate}','${endDate}','${reportName}','${memberIds}',${allGroups}, ${allMembers},
+                                                                            '${startDate}','${endDate}','${memberIds}',${allGroups}, ${allMembers},
                                                                              ${pageNumber},${pageSize})`);     
           let final_result_updated = [];
           let result:ResponseModel<ChannelDetailsReportDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
