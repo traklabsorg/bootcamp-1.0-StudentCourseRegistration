@@ -863,7 +863,7 @@ export class LessonRoutes{
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons(${communityId},${startDate},${endDate},${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons(${communityId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopLessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            
