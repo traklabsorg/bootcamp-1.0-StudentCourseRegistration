@@ -539,7 +539,7 @@ export class SectionRoutes{
      //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let given_children_array = requestModel.Children;
       let communityId : number = null;
-     
+      let startDate,endDate;
        
       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
@@ -547,11 +547,17 @@ export class SectionRoutes{
          case 'communityId':
            communityId = condition.FieldValue;
            break;
+         case 'startDate' :
+            startDate = condition.FieldValue;
+            break;
+         case 'endDate' :
+            endDate = condition.FieldValue;
+            break;    
        }
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses(${communityId},${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses(${communityId},${startDate},${endDate},${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopCoursesDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            
