@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
+import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto, TopLessonDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -762,6 +762,8 @@ export class LessonRoutes{
   }
 
 
+  
+
   // endpoint to get Pending completion report
   @Get("/getPendingCompletionReport/:pageSize/:pageNumber")
   async getPendingCompletionReport(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<PendingCompletionReportDto>>{
@@ -830,6 +832,59 @@ export class LessonRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  
+
+  // endpoint to get Top lesson Analytics
+  @Get("/getTopLessons/:pageSize/:pageNumber")
+  async getTopLessons(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<TopLessonDto>>{
+    try {
+      console.log("getTopLessons ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+     
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons(${communityId},${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<TopLessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,mapperDto.topLessonMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
 
 
   @Get('/getTopLearners/:pageSize/:pageNumber')
