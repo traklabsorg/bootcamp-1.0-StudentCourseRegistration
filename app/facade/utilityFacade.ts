@@ -98,26 +98,44 @@ public sns_sqs = SNS_SQS.getInstance();
             for(let j = 0;j<result.DataCollection.length;j++){
                 let sample_section = result.DataCollection[j];
                 // console.log("Sample Section is......",sample_section)
+                console.log("section........")
                 let isSectionPublishedFlag = true;
                 for (let k = 0;k< sample_section.lesson.length;k++){
                     let sample_lesson = sample_section.lesson[k];
                     let flag = true;
+                    console.log("lesson........")
                     for (let l = 0;l< sample_lesson.lessonData.length;l++){
                         let sample_lessonData = sample_lesson.lessonData[l];
-                        for (let m = 0;m<sample_lessonData.lessonDataReview.length;m++)
-                        {
-                            let sample_lessonDataReview = sample_lessonData.lessonDataReview[m]
-                            if(sample_lessonDataReview.reviewStatus != true){
-                                flag = false;
-                                break;
-                            }
+                        
+                        let sample_lessonDataReview = (sample_lessonData.lessonDataReview.length)?sample_lessonData.lessonDataReview[0]:null;
+                        console.log("lessonData........")
+                        console.log(sample_lessonData.lessonDataReview.length)
+                        for(let m = 1;m < sample_lessonData.lessonDataReview.length;m++){
+                            console.log("choosing recent........")
+                            if((new Date(sample_lessonData.lessonDataReview[m].CreationDate)).getTime() > (new Date(sample_lessonDataReview.CreationDate)).getTime())
+                                  sample_lessonDataReview = sample_lessonData.lessonDataReview[m];
+                            
+                                  
                         }
-                        if (sample_lessonData.lessonDataReview.length == 0){
+                        // for (let m = 0;m<sample_lessonData.lessonDataReview.length;m++)
+                        // {
+                        //     let sample_lessonDataReview = sample_lessonData.lessonDataReview[m]
+
+                        //     if(sample_lessonDataReview.reviewStatus != true){
+                        //         flag = false;
+                        //         break;
+                        //     }
+                        // }
+                        if (sample_lessonData.lessonDataReview.length == 0){ // flag indicates whether theres any lessonData review or not
                             flag = false;
                             break;
                         }
-                        if(flag == false)
-                            break
+                        if(sample_lessonDataReview.reviewStatus != true){
+                                     flag = false;
+                                     break;
+                                 }
+                       
+                        
                     }
                     if(flag==false){
                         isSectionPublishedFlag = false
