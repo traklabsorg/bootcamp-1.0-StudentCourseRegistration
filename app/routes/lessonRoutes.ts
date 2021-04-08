@@ -274,21 +274,21 @@ export class LessonRoutes{
       // if(requestModel.Children.indexOf('lesson')<=-1)
       //   requestModel.Children.unshift('lesson');
       let custom_lesson_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
-      let result;
-      //let result = await this.lessonFacade.search(requestModel,true,custom_lesson_children_array);
-
-      // await Promise.all(result.getDataCollection().map(async (lesson:LessonDto)=>{
-      //   await Promise.all(lesson.lessonData.map((lessonData:LessonDataDto)=>{
-      //     let modifiedLessonDataUserArray = [];
-      //     for(let i = 0;i<lessonData.lessonDataUser.length;i++){
-      //       if(lessonData.lessonDataUser[i].userId == userId){
-      //         console.log("To be inserted lessondataUser is.....",lessonData.lessonDataUser[i])
-      //         modifiedLessonDataUserArray.push(lessonData.lessonDataUser[i])
-      //       }
-      //     }
-      //     lessonData.lessonDataUser = modifiedLessonDataUserArray;
-      //   }))
-      // }))
+      //let result;
+      let result = await this.lessonFacade.search(requestModel,true,custom_lesson_children_array);
+      console.log("result fetched.....")
+      await Promise.all(result.getDataCollection().map(async (lesson:LessonDto)=>{
+        await Promise.all(lesson.lessonData.map((lessonData:LessonDataDto)=>{
+          let modifiedLessonDataUserArray = [];
+          for(let i = 0;i<lessonData.lessonDataUser.length;i++){
+            if(lessonData.lessonDataUser[i].userId == userId){
+              console.log("To be inserted lessondataUser is.....",lessonData.lessonDataUser[i])
+              modifiedLessonDataUserArray.push(lessonData.lessonDataUser[i])
+            }
+          }
+          lessonData.lessonDataUser = modifiedLessonDataUserArray;
+        }))
+      }))
 
       return result;
     } catch (error) {
@@ -852,6 +852,7 @@ export class LessonRoutes{
      //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let given_children_array = requestModel.Children;
       let communityId : number = null;
+      let channelId : number = null;
       let startDate,endDate;
        
       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
@@ -866,11 +867,14 @@ export class LessonRoutes{
          case 'endDate' :
             endDate = condition.FieldValue;
             break;  
+         case 'channelId' :
+           channelId = condition.FieldValue;
+           break;   
        }
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons(${communityId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons(${communityId},${channelId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopLessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            
