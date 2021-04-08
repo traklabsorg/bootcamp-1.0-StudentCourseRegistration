@@ -259,6 +259,9 @@ export class ChannelUserRoutes implements OnModuleInit{
     return dict;
   }
 
+  
+  
+
   @Get("/findAllMemberOfAParticularChannel/:pageSize/:pageNumber")
   async func(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request){
     try {

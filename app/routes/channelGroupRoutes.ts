@@ -226,7 +226,7 @@ export class ChannelGroupRoutes{
 
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
       let dataCollection = [];
-      let communityId=null,channelId=null,userId=null;
+      let communityId=null,channelIds=null,userId=null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition is......",condition);
         switch(condition.FieldName.toLowerCase()){
@@ -234,14 +234,14 @@ export class ChannelGroupRoutes{
             communityId = condition.FieldValue;
             break ;
           case "channelid":
-            channelId = condition.FieldValue;
+            channelIds = condition.FieldValue;
             break;
           case "userid":
             userId = condition.FieldValue;
             break;
         }
       })
-      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_user_progress(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = [];
       finalResult.forEach((entity:any)=>{
         final_result_updated.push(entity);
