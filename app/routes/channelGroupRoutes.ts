@@ -453,7 +453,7 @@ export class ChannelGroupRoutes{
      try{
       
       
-      let communityId: number,channelId: number,groupId: number;
+      let communityId: number = null,channelId: number = null,groupId: number = null;
       let requestModelQuery: RequestModelQuery = JSON.parse(req.headers.requestmodel.toString());
       requestModelQuery.Filter.PageInfo.PageSize = pageSize;
       requestModelQuery.Filter.PageInfo.PageNumber = pageNumber;
