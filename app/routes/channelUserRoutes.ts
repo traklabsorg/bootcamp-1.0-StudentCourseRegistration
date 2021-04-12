@@ -259,6 +259,9 @@ export class ChannelUserRoutes implements OnModuleInit {
     return dict;
   }
 
+
+
+
   @Get("/findAllMemberOfAParticularChannel/:pageSize/:pageNumber")
   async func(@Param('pageSize') pageSize: number, @Param('pageNumber') pageNumber: number, @Req() req: Request) {
     try {
@@ -268,7 +271,7 @@ export class ChannelUserRoutes implements OnModuleInit {
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result: ResponseModel<ChannelUserDto> = new ResponseModel("SampleInbuiltRequest", [], null, "200", null, null, null, "SampleSocketId", "CommunityUrl")
       let dataCollection = [];
-      let communityId, channelId, userId;
+      let communityId = null, channelId = null, userId = null;
       requestModel.Filter.Conditions.forEach((condition: Condition) => {
         switch (condition.FieldName.toLowerCase()) {
           case "communityid":

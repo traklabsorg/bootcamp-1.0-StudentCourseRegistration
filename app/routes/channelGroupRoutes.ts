@@ -226,7 +226,7 @@ export class ChannelGroupRoutes{
 
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
       let dataCollection = [];
-      let communityId=null,channelId=null,userId=null;
+      let communityId=null,channelIds=null,userId=null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition is......",condition);
         switch(condition.FieldName.toLowerCase()){
@@ -234,14 +234,14 @@ export class ChannelGroupRoutes{
             communityId = condition.FieldValue;
             break ;
           case "channelid":
-            channelId = condition.FieldValue;
+            channelIds = condition.FieldValue;
             break;
           case "userid":
             userId = condition.FieldValue;
             break;
         }
       })
-      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_user_progress(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = [];
       finalResult.forEach((entity:any)=>{
         final_result_updated.push(entity);
@@ -266,7 +266,7 @@ export class ChannelGroupRoutes{
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
       let dataCollection = [];
-      let communityId=null,channelId=null,userId=null,type=null,publicationType=null;
+      let communityId=null,channelIds=null,userId=null,type=null,publicationType=null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         console.log("condition.FieldName.toLowerCase()...",condition.FieldName.toLowerCase());
         switch(condition.FieldName.toLowerCase()){
@@ -276,8 +276,8 @@ export class ChannelGroupRoutes{
           case "userid":
             userId = condition.FieldValue
             break 
-          case "channelid":
-            channelId = condition.FieldValue
+          case "channelids":
+            channelIds = condition.FieldValue
             break 
           case "type":
             type = condition.FieldValue
@@ -291,7 +291,7 @@ export class ChannelGroupRoutes{
       //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       //   dataCollection.push(final_result);
       // })
-      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},${channelId},${userId},${type},${publicationType},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},'${channelIds}',${userId},${type},${publicationType},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = []
       // dataCollection.push(final_result);
       final_result.forEach((entity:any)=>{
@@ -453,7 +453,7 @@ export class ChannelGroupRoutes{
      try{
       
       
-      let communityId: number,channelId: number,groupId: number;
+      let communityId: number = null,channelId: number = null,groupId: number = null;
       let requestModelQuery: RequestModelQuery = JSON.parse(req.headers.requestmodel.toString());
       requestModelQuery.Filter.PageInfo.PageSize = pageSize;
       requestModelQuery.Filter.PageInfo.PageNumber = pageNumber;
