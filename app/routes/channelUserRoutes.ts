@@ -373,7 +373,7 @@ export class ChannelUserRoutes implements OnModuleInit {
         let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_users(${body.CommunityId},${dto.channelId},${dto.userId})`)
         console.log("DEleted data is...",final_result) 
         dataCollection.push(final_result);
-      }))
+      })
       result.setDataCollection(dataCollection);
       console.log("Returning.........",result)
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later

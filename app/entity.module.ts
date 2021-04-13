@@ -65,10 +65,12 @@ import { SectionReviewRoutes } from './routes/sectionReviewRoutes';
 import { UtilityFacade } from './facade/utilityFacade';
 import { ChannelUserRoutes } from './routes/channelUserRoutes';
 import { ChannelUserFacade } from './facade/channelUserFacade';
+import { CommunityCard } from 'submodules/platform-3.0-Entities/communityCard';
+import { CommunityBills } from 'submodules/platform-3.0-Entities/communityBills';
 
 @Module({
   imports: [HttpModule,
-    TypeOrmModule.forFeature([ Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview]),
+    TypeOrmModule.forFeature([ CommunityBills,CommunityCard,Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview]),
   ],
   providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,SectionReviewFacade,UtilityFacade,ChannelUserFacade,AuthService],
   controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,SectionReviewRoutes,ChannelUserRoutes,AuthController]
