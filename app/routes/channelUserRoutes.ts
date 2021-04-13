@@ -363,17 +363,19 @@ export class ChannelUserRoutes implements OnModuleInit{
   // }
 
   @Delete('/')
-  async deleteChannelUser(@Body() body:any):Promise<ResponseModel<ChannelUserDto>>{
+  async deleteChannelUser(@Body() body:any):Promise<any>{
     try {
       await console.log("Inside DeleteProduct of controller....body id..." + JSON.stringify(body.DataCollection));
       let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
       let dataCollection = []
-      body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+      await Promise.all(body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
         console.log(dto)
         let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_users(${body.CommunityId},${dto.channelId},${dto.userId})`)
+        console.log("DEleted data is...",final_result) 
         dataCollection.push(final_result);
-      })
+      }))
       result.setDataCollection(dataCollection);
+      console.log("Returning.........",result)
       // this.sns_sqs.publishMessageToTopic("GROUP_ADDED",{success:body})  // remove from here later
       return result;
       // return null;

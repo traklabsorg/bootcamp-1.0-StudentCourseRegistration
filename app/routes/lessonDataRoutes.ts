@@ -235,7 +235,7 @@ export class LessonDataRoutes{
         let lessonPublishedNotification = {
           "lessonId" : lessonData.lessonId,
           "lessonTitle" : data.title,
-          "channelName" : data.section.channel.title,
+          "channelName" : (data.section)?data.section.channel.title:"test channel",
           "lessonLink" : `https://${body.CommunityUrl}/lesson/${lessonData.lessonId}`
         }
         this.lessonDataFacade.createNotification(lessonData.CreatedBy,null,Label.lessonPublished,NotificationType.email,lessonData.CreationDate,lessonPublishedNotification)
