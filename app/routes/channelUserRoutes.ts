@@ -7,7 +7,7 @@ import { plainToClass } from 'class-transformer';
 // import { microserviceConfig } from 'app/microserviceConfig';
 import { Request } from 'express';
 import { ChannelUserDto } from '../../submodules/platform-3.0-Dtos/channelUserDto';
-import { RequestModel} from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
+import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { json } from 'body-parser';
@@ -22,21 +22,21 @@ let mapperDto = require('../../submodules/platform-3.0-Mappings/channelUserMappe
 
 
 @Controller('channelUser')
-export class ChannelUserRoutes implements OnModuleInit{
+export class ChannelUserRoutes implements OnModuleInit {
 
-  
 
-  constructor(private channelUserFacade: ChannelUserFacade,private channelGroupFacade:ChannelGroupFacade) { }
+
+  constructor(private channelUserFacade: ChannelUserFacade, private channelGroupFacade: ChannelGroupFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
-  private topicArray = ['CHANNELUSER_ADD','CHANNELUSER_UPDATE','CHANNELUSER_DELETE'];
+  private topicArray = ['CHANNELUSER_ADD', 'CHANNELUSER_UPDATE', 'CHANNELUSER_DELETE'];
   private serviceName = ['CHANNEL_SERVICE', 'CHANNEL_SERVICE', 'CHANNEL_SERVICE'];
-  
-  private channelUser_children_array = ['channel','user'];
+
+  private channelUser_children_array = ['channel', 'user'];
 
 
-  
-  
+
+
 
   // @Client(microserviceConfig)
   // client: ClientKafka;
@@ -62,15 +62,15 @@ export class ChannelUserRoutes implements OnModuleInit{
                 break;
               case 'CHANNELUSER_UPDATE':
                 console.log("Inside CHANNELUSER_UPDATE Topic");
-               responseModelOfChannelUserDto = await this.updateChannelUser(result["message"]);
+                responseModelOfChannelUserDto = await this.updateChannelUser(result["message"]);
                 break;
               case 'CHANNELUSER_DELETE':
                 console.log("Inside CHANNELUSER_DELETE Topic");
                 responseModelOfChannelUserDto = await this.deleteChannelUser(result["message"]);
                 break;
-  
+
             }
-  
+
             console.log("Result of aws of GroupRoutes  is...." + JSON.stringify(result));
             let requestModelOfChannelUserDto: RequestModel<ChannelUserDto> = result["message"];
             responseModelOfChannelUserDto.setSocketId(requestModelOfChannelUserDto.SocketId)
@@ -92,9 +92,9 @@ export class ChannelUserRoutes implements OnModuleInit{
             console.log(error, result);
             for (let index = 0; index < result.OnFailureTopicsToPush.length; index++) {
               const element = result.OnFailureTopicsToPush[index];
-              let errorResult: ResponseModel<ChannelUserDto> = new ResponseModel<ChannelUserDto>(null,null,null,null,null,null,null,null,null);
-              errorResult.setStatus(new Message("500",error,null))
-              
+              let errorResult: ResponseModel<ChannelUserDto> = new ResponseModel<ChannelUserDto>(null, null, null, null, null, null, null, null, null);
+              errorResult.setStatus(new Message("500", error, null))
+
 
               this.sns_sqs.publishMessageToTopic(element, errorResult);
             }
@@ -103,8 +103,8 @@ export class ChannelUserRoutes implements OnModuleInit{
       })())
     }
 
-    
-    
+
+
     // requestPatterns.forEach(pattern => {
     //   this.client.subscribeToResponseOf(pattern);
     // });
@@ -113,7 +113,7 @@ export class ChannelUserRoutes implements OnModuleInit{
   // @EventPattern('group-create')
   // async handleEntityCreated(payload: Request): Promise<boolean> {
   //   console.log("Calling to create group");
-    
+
   //   console.log(JSON.stringify(payload.body) + ' created');
   //   this.client.emit<any>('success', 'Message received by handleEntityCreated SuccessFully' + JSON.stringify(payload['value']))
   //   // this.creategroup(payload);
@@ -158,7 +158,7 @@ export class ChannelUserRoutes implements OnModuleInit{
   }
 
 
-  
+
 
   // @Get("/:pageSize/:pageNumber")
   // async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
@@ -184,7 +184,7 @@ export class ChannelUserRoutes implements OnModuleInit{
   // }
 
   @Get("/:pageSize/:pageNumber")
-  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
+  async allProductsByPageSizeAndPageNumber(@Param('pageSize') pageSize: number, @Param('pageNumber') pageNumber: number, @Req() req: Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
@@ -197,7 +197,7 @@ export class ChannelUserRoutes implements OnModuleInit{
         console.log("Inside Condition.....")
         requestModel.Children = this.channelUser_children_array;
       }
-      if(requestModel.Children.indexOf('channelUser')<=-1)
+      if (requestModel.Children.indexOf('channelUser') <= -1)
         requestModel.Children.unshift('channelUser');
       let result = await this.channelUserFacade.search(requestModel);
       return result;
@@ -209,47 +209,47 @@ export class ChannelUserRoutes implements OnModuleInit{
 
 
   @Get("/count/findAllMemberCountOfAParticularChannel/all")
-  async func1(@Req() req:Request){
+  async func1(@Req() req: Request) {
     let requestModel1: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
     let channelIds = [];
-    requestModel1.Filter.Conditions.forEach((condition:Condition)=>{
-      if(condition.FieldName == "channelId"){
+    requestModel1.Filter.Conditions.forEach((condition: Condition) => {
+      if (condition.FieldName == "channelId") {
         channelIds.push(condition.FieldValue);
       }
     })
-    let requestModel:RequestModelQuery = new RequestModelQuery();
+    let requestModel: RequestModelQuery = new RequestModelQuery();
     requestModel.Children = ["channelUser"];
     requestModel.Filter.Conditions = [];
-    channelIds.forEach((id:number)=>{
-      let condition:Condition = new Condition();
+    channelIds.forEach((id: number) => {
+      let condition: Condition = new Condition();
       condition.FieldName = "channelId";
       condition.FieldValue = id;
       condition.ConditionalSymbol = ConditionalOperation.Or;
       requestModel.Filter.Conditions.push(condition);
-      
+
     })
     requestModel.Filter.OrderByField = "channelUser.channelId";
-    let result1 = await this.channelUserFacade.getCountByConditions(requestModel,"DISTINCT(channelUser.userId)")
-    console.log("result1....",result1);
+    let result1 = await this.channelUserFacade.getCountByConditions(requestModel, "DISTINCT(channelUser.userId)")
+    console.log("result1....", result1);
     let result2 = await this.channelGroupFacade.findAllUsersInAGroupSubscribedToAChannel(channelIds);
-    console.log("result2....",result2);
+    console.log("result2....", result2);
     var dict = [];
-    result1.forEach((res:any)=>{
+    result1.forEach((res: any) => {
       var dict1 = {};
       dict1["channelId"] = res["channelUser_channel_id"];
       dict1["count_temp"] = res["count_temp"];
       dict.push(dict1);
     })
-    result2.forEach((res:any)=>{
+    result2.forEach((res: any) => {
       let flag = false;
-      for(let i = 0;i<dict.length;i++){
-        if(dict[i]["channelId"] == res["channelGroup_channel_id"]){
+      for (let i = 0; i < dict.length; i++) {
+        if (dict[i]["channelId"] == res["channelGroup_channel_id"]) {
           flag = true;
-          dict[i]["count_temp"] = (parseInt(dict[i]["count_temp"])+parseInt(res["count_temp"])).toString();
+          dict[i]["count_temp"] = (parseInt(dict[i]["count_temp"]) + parseInt(res["count_temp"])).toString();
           break;
         }
       }
-      if(flag==false){
+      if (flag == false) {
         var dict1 = {};
         dict1["channelId"] = res["channelGroup_channel_id"];
         dict1["count_temp"] = res["count_temp"];
@@ -259,30 +259,30 @@ export class ChannelUserRoutes implements OnModuleInit{
     return dict;
   }
 
-  
-  
+
+
 
   @Get("/findAllMemberOfAParticularChannel/:pageSize/:pageNumber")
-  async func(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request){
+  async func(@Param('pageSize') pageSize: number, @Param('pageNumber') pageNumber: number, @Req() req: Request) {
     try {
       console.log("Inside controller ......group by pageSize & pageNumber");
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
-      let result:ResponseModel<ChannelUserDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
+      let result: ResponseModel<ChannelUserDto> = new ResponseModel("SampleInbuiltRequest", [], null, "200", null, null, null, "SampleSocketId", "CommunityUrl")
       let dataCollection = [];
-      let communityId=null,channelId=null,userId=null;
-      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
-        switch(condition.FieldName.toLowerCase()){
+      let communityId = null, channelId = null, userId = null;
+      requestModel.Filter.Conditions.forEach((condition: Condition) => {
+        switch (condition.FieldName.toLowerCase()) {
           case "communityid":
             communityId = condition.FieldValue
-            break 
+            break
           case "userid":
             userId = condition.FieldValue
-            break 
+            break
           case "channelid":
             channelId = condition.FieldValue
-            break 
+            break
         }
       })
       // requestModel.Filter.Conditions.forEach(async (condition:Condition)=>{
@@ -292,8 +292,8 @@ export class ChannelUserRoutes implements OnModuleInit{
       let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_users(${communityId},${channelId},${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       console.log(final_result)
       let final_result_updated = [];
-      final_result.forEach((entity:any)=>{
-        entity = objectMapper(entity,mapperDto.channelUserBasedOnChannelMapper)
+      final_result.forEach((entity: any) => {
+        entity = objectMapper(entity, mapperDto.channelUserBasedOnChannelMapper)
         final_result_updated.push(entity)
       })
       // final_result = objectMapper(final_result,mapperDto.channelUserBasedOnChannelMapper)
@@ -324,13 +324,13 @@ export class ChannelUserRoutes implements OnModuleInit{
   //   }
   // }
 
-  @Post("/") 
-  async createChannelUser(@Body() body:any): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
+  @Post("/")
+  async createChannelUser(@Body() body: any): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelGroupDto></ChannelGroupDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
-      let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      console.log("CREATE CHANNEL USER >>>>>>>>>>>>>>>>>>>>> Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      let result: ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid, [], null, "200", null, null, null, body.SocketId, body.CommunityUrl)
       let dataCollection = []
-      body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+      body.DataCollection.forEach(async (dto: ChannelUserDto) => {
         let final_result = await this.channelUserFacade.genericRepository.query(`SELECT * FROM public.fn_add_channels_users(${body.CommunityId},${dto.channelId},${dto.userId},'${JSON.stringify(dto.channelUserAdditionalDetails)}')`);
         dataCollection.push(final_result);
       })
@@ -346,7 +346,7 @@ export class ChannelUserRoutes implements OnModuleInit{
   }
 
   @Put("/")
-  async updateChannelUser(@Body() body:RequestModel<ChannelUserDto>): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelUserDto></ChannelUserDto>....Promise<ResponseModel<Grou[pDto>>]
+  async updateChannelUser(@Body() body: RequestModel<ChannelUserDto>): Promise<ResponseModel<ChannelUserDto>> {  //requiestmodel<ChannelUserDto></ChannelUserDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
       await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       return await this.channelUserFacade.updateEntity(body);
@@ -366,9 +366,9 @@ export class ChannelUserRoutes implements OnModuleInit{
   async deleteChannelUser(@Body() body:any):Promise<any>{
     try {
       await console.log("Inside DeleteProduct of controller....body id..." + JSON.stringify(body.DataCollection));
-      let result:ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid,[],null,"200",null,null,null,body.SocketId,body.CommunityUrl)
+      let result: ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid, [], null, "200", null, null, null, body.SocketId, body.CommunityUrl)
       let dataCollection = []
-      await Promise.all(body.DataCollection.forEach(async (dto:ChannelUserDto)=>{
+      body.DataCollection.forEach(async (dto: ChannelUserDto) => {
         console.log(dto)
         let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_delete_channels_users(${body.CommunityId},${dto.channelId},${dto.userId})`)
         console.log("DEleted data is...",final_result) 
