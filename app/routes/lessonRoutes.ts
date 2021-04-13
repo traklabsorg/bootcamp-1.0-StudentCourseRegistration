@@ -975,11 +975,11 @@ export class LessonRoutes{
       result.getDataCollection().map(async (lesson: LessonDto)=>{
         //retrieve userIds of all members of the channel
         let courseDetails : ResponseModel<LessonDto> = await this.lessonFacade.getParentId(["lesson","section","channel"],lesson.Id);
-        let channelId = courseDetails.getDataCollection()[0].section.channelId;
-        let streamName = courseDetails.getDataCollection()[0].section.sectionType;
-        let channelName = courseDetails.getDataCollection()[0].section.channel.title;
+        let channelId = (courseDetails.getDataCollection()[0].section)?courseDetails.getDataCollection()[0].section.channelId:null;
+        let streamName = (courseDetails.getDataCollection()[0].section)?courseDetails.getDataCollection()[0].section.sectionType:"dummy name";
+        let channelName = (courseDetails.getDataCollection()[0].section)?courseDetails.getDataCollection()[0].section.channel.title:"dummy title";
         console.log("ChannelId",JSON.stringify(channelId))
-
+      if(channelId != null){
         let pageSize: number = 1000,pageNumber: number = 1;
         let userIds: number[] = await this.channelGroupFacade.getUserIdsByChannelId([channelId],pageSize,pageNumber);
         console.log("Email ids are....",userIds);   
@@ -992,7 +992,8 @@ export class LessonRoutes{
           }
           
           await this.lessonFacade.createNotification(userId,null,Label.newLesson,NotificationType.email,lesson.CreationDate,lessonNotificationData)
-        }) 
+        })
+      } 
         
        })
 

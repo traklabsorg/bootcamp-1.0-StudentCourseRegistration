@@ -190,6 +190,7 @@ export class LessonDataRoutes{
       console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       
       let lessonData : LessonDataDto = body.DataCollection[0];
+      console.log("hi")
       if(lessonData.isSubmitted){
           console.log("lesson data isSubmitted is true.......")  
           //code for lessonSubmitted notification
@@ -214,7 +215,7 @@ export class LessonDataRoutes{
         userData.map((user: any)=>{
           courseSubmittedNotification.courseId = channelData.getDataCollection()[0].sectionId;
           courseSubmittedNotification.learnerName = user.learner_first_name;
-          courseSubmittedNotification.courseTitle = channelData.getDataCollection()[0].section.title;
+          courseSubmittedNotification.courseTitle = (channelData.getDataCollection()[0].section)?channelData.getDataCollection()[0].section.title:"dummy title";
           courseSubmittedNotification.courseLink =  `https://${body.CommunityUrl}//courses/${channelData.getDataCollection()[0].sectionId}`; 
           this.lessonDataFacade.createNotification(user.group_admin_user_id,null,Label.courseSubmitted,NotificationType.email,lessonData.CreationDate,courseSubmittedNotification)
         })
