@@ -969,7 +969,7 @@ export class LessonRoutes{
       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
-      let communityId:number,channelId:number;
+      let communityId:number,channelId:number = null,groupId:number = null;
       let finalResult:ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl")
 
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
@@ -980,10 +980,13 @@ export class LessonRoutes{
           case 'channelId' :
             channelId = condition.FieldValue;
             break;
+          case 'groupId' :
+            groupId = condition.FieldValue;
+            break;  
         }
 
       })
-      let result = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_learners(${communityId}, ${channelId}, ${requestModel.Filter.PageInfo.PageNumber}, ${requestModel.Filter.PageInfo.PageSize})`);
+      let result = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_learners(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber}, ${requestModel.Filter.PageInfo.PageSize})`);
       let final_result_updated = [];
       result.forEach((entity:any)=>{
         entity = objectMapper(entity,mapperDto.lessonBasedOnChannelMapper)
