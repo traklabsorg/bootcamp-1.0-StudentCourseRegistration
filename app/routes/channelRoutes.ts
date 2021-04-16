@@ -209,7 +209,7 @@ export class ChannelRoutes implements OnModuleInit{
   @Post("/") 
   async createChannel(@Body() body:RequestModel<ChannelDto>): Promise<ResponseModel<ChannelDto>> {  //requiestmodel<ChannelDto></ChannelDto>....Promise<ResponseModel<Grou[pDto>>]
     try {
-      await console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
+      console.log("Inside CreateProduct of controller....body id" + JSON.stringify(body));
       let result = await this.channelFacade.create(body);
       console.log("Result returned is ")
       console.log("--------------------------------------------------------------------")
