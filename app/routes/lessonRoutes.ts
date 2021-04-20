@@ -207,7 +207,26 @@ export class LessonRoutes{
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
+  @Get("/findAllLessonRelatedDetailsWithAllReviewsByUserIdAsCreator/:pageSize/:pageNumber")
+  async findAllLessonRelatedDetailsWithAllReviewsByUserIdAsCreator(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
+    try {
+      console.log("Inside controller ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      if(requestModel.Children.indexOf('lesson')<=-1)
+        requestModel.Children.unshift('lesson');
+      let custom_section_children_array = [['lesson','section'],['section','sectionReview'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let result = await this.lessonFacade.search(requestModel,true,custom_section_children_array);
+      //result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result);
+      // console.log("Result from assignIsPublishedFieldsToSectionAndLesson  is....",result[0]);
+      return result;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   @Get("/findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId/:pageSize/:pageNumber")
   async findAllLessonRelatedDetailsWithAllReviewsByLoggedInUserId(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request):Promise<any>{
