@@ -191,10 +191,115 @@ public sns_sqs = SNS_SQS.getInstance();
         return result;
     }
 
+
+
+    async assignIsPublishedFieldsToLesson(result:any,findUserDeatils?:boolean):Promise<any>{
+        let publishedLessonCreatorIds = [];
+        console.log("\n\n\n\n\n\n\n\n\n\n\n\nBefore assignIsPublishedFieldsToLesson....result is...",result,"\n\n\n\n\n\n\n\n\n\n\n\n\n")    
+        
+            // for(let j = 0;j<result.DataCollection.length;j++){
+            //     let sample_section = result.DataCollection[j];
+            //     // console.log("Sample Section is......",sample_section)
+            //     console.log("section........")
+            //     let isSectionPublishedFlag = true;
+                for (let k = 0;k< result.DataCollection.length;k++){
+                    let sample_lesson = result.DataCollection[k];
+                    let flag = true;
+                    console.log("lesson........")
+                    for (let l = 0;l< sample_lesson.lessonData.length;l++){
+                        let sample_lessonData = sample_lesson.lessonData[l];
+                        
+                        let sample_lessonDataReview = (sample_lessonData.lessonDataReview.length)?sample_lessonData.lessonDataReview[0]:null;
+                        console.log("lessonData........")
+                        console.log(sample_lessonData.lessonDataReview.length)
+                        for(let m = 1;m < sample_lessonData.lessonDataReview.length;m++){
+                            console.log("choosing recent........")
+                            if((new Date(sample_lessonData.lessonDataReview[m].CreationDate)).getTime() > (new Date(sample_lessonDataReview.CreationDate)).getTime())
+                                  sample_lessonDataReview = sample_lessonData.lessonDataReview[m];
+                            
+                                  
+                        }
+                        // for (let m = 0;m<sample_lessonData.lessonDataReview.length;m++)
+                        // {
+                        //     let sample_lessonDataReview = sample_lessonData.lessonDataReview[m]
+
+                        //     if(sample_lessonDataReview.reviewStatus != true){
+                        //         flag = false;
+                        //         break;
+                        //     }
+                        // }
+                        if (sample_lessonData.lessonDataReview.length == 0){ // flag indicates whether theres any lessonData review or not
+                            flag = false;
+                            break;
+                        }
+                        if(sample_lessonDataReview.reviewStatus != true){
+                                     flag = false;
+                                     break;
+                                 }
+                       
+                        
+                    }
+                    if(flag==false){
+                        //isSectionPublishedFlag = false
+                        // delete sample_section.lesson[k]
+                        // delete result[i].section[j].lesson[k]
+                        sample_lesson.isPublished = false;
+                        }
+                    else{
+                            //publishedLessonCreatorIds.push(sample_section.lesson[k].CreatedBy);
+                            sample_lesson.isPublished = true;
+                        }
+                }
+                // if(isSectionPublishedFlag==true){
+                //     publishedLessonCreatorIds.push(sample_section.CreatedBy);
+                //     sample_section.isPublished = true;
+                // }
+                // else{
+                //     sample_section.isPublished = false;
+                // }
+             return result;   
+            }
+            // })
+        //  publishedLessonCreatorIds = publishedLessonCreatorIds.filter(this.onlyUnique);
+        // console.log("Published lesson Creator ids are.....",publishedLessonCreatorIds)
+        // // let requestModel : RequestModelQuery = new RequestModelQuery();
+        // // requestModel.Children = [];
+        // // requestModel.Filter.Conditions = [];
+        // // publishedLessonCreatorIds.forEach((id:number)=>{
+        // //     let condition:Condition = new Condition();
+        // //     condition.FieldName = "Id";
+        // //     condition.FieldValue = id;
+        // //     condition.ConditionalSymbol = ConditionalOperation.Or;
+        // //     requestModel.Filter.Conditions.push(condition);
+        // // })
+        
+        // console.log("Result getting returned is.....",result);
+        // if(findUserDeatils == true){
+        //     let userDetails = await this.getUserDetails(publishedLessonCreatorIds);
+        //     if(publishedLessonCreatorIds.length == 0 || publishedLessonCreatorIds == [null])
+        //     userDetails.DataCollection = null;
+        //     console.log("Userdetails......",userDetails);
+        //     // console.log("result is.......",result);
+
+        //     // let myJSON = {};
+        //     // myJSON["userDetails"] = userDetails.DataCollection
+        //     // result.DataCollection.push(myJSON);
+        //     if(userDetails.DataCollection != null)
+        //     result.DataCollection.push(userDetails.DataCollection);
+        //     console.log("Final TResult to be returned is....",result);
+        //     return result
+        // }
+        
+        
+    }
+
+
+
+
+
     
 
 
 
     
   
-}

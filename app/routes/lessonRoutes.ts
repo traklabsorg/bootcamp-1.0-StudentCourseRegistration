@@ -220,7 +220,7 @@ export class LessonRoutes{
         requestModel.Children.unshift('lesson');
       let custom_section_children_array = [['lesson','section'],['section','sectionReview'],['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       let result = await this.lessonFacade.search(requestModel,true,custom_section_children_array);
-      //result = await this.utilityFacade.assignIsPublishedFieldsToSectionAndLesson(result);
+      result = await this.utilityFacade.assignIsPublishedFieldsToLesson(result);
       // console.log("Result from assignIsPublishedFieldsToSectionAndLesson  is....",result[0]);
       return result;
     } catch (error) {
