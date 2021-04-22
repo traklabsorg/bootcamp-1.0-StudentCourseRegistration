@@ -9,7 +9,7 @@ import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platf
 var objectMapper = require('object-mapper');
 import { Request } from 'express';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
-import { LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto, TopLessonDaywiseDto, TopLessonDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
+import { LessonDailyEngagementDto, LessonDto, LessonInteractionOverviewDto, LessonInteractionReportDto, LessonPublicationReportDto, LessonWeeklyEngagementDto, TopLessonDaywiseDto, TopLessonDto } from '../../submodules/platform-3.0-Dtos/lessonDto';
 import { RequestModelQuery } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery';
 import { RequestModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
@@ -964,6 +964,142 @@ export class LessonRoutes{
            
          queryResult.forEach((entity:any)=>{
              entity = objectMapper(entity,mapperDto.topLessonDaywiseMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  // endpoint to get Top lessons daily engagement Analytics
+  @Get("/getDailyEngagement/:pageSize/:pageNumber")
+  async getDailyEngagement(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonDailyEngagementDto>>{
+    try {
+      console.log("getLessonsDailyEngagement ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let channelId : number = null;
+      let startDate,endDate;
+      let userId=null,userRole=null;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'channelId':
+           channelId = condition.FieldValue;
+           break;  
+         case 'startDate' :
+            startDate = condition.FieldValue;
+            break;
+         case 'endDate' :
+            endDate = condition.FieldValue;
+            break;
+         case 'userId' :
+            userId = condition.FieldValue;
+            break;
+         case 'userRole' :
+            userRole = condition.FieldValue;
+            break;     
+         
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons_daily_engagement(${communityId},${channelId},'${startDate}','${endDate}',${userId},${userRole},${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<LessonDailyEngagementDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,mapperDto.lessonDailyEngagementMapper); // mapping to camel case
+ 
+             final_result_updated.push(entity)
+           })
+         result.setDataCollection(final_result_updated);
+         return result;
+ 
+      // let isSubset = given_children_array.every(val => this.lesson_children_array.includes(val) && given_children_array.filter(el => el === val).length <= this.lesson_children_array.filter(el => el === val).length);
+      // console.log("isSubset is......" + isSubset);
+      // if (!isSubset) {
+      //   console.log("Inside Condition.....")
+      //   requestModel.Children = this.lesson_children_array;
+      // }
+      // if(requestModel.Children.indexOf('lesson')<=-1)
+      //   requestModel.Children.unshift('lesson');
+      
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  // endpoint to get Top lessons weekly engagement Analytics
+  @Get("/getWeeklyEngagement/:pageSize/:pageNumber")
+  async getWeeklyEngagement(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<LessonWeeklyEngagementDto>>{
+    try {
+      console.log("getLessonsWeeklyEngagement ......group by pageSize & pageNumber");
+      let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+     //  requestModel.Filter.PageInfo.PageSize = pageSize;
+     //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+      let given_children_array = requestModel.Children;
+      let communityId : number = null;
+      let channelId : number = null;
+      let startDate,endDate;
+      let userId=null,userRole=null;
+       
+      // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+       switch(condition.FieldName){
+         case 'communityId':
+           communityId = condition.FieldValue;
+           break;
+         case 'channelId':
+           channelId = condition.FieldValue;
+           break;  
+         case 'startDate' :
+            startDate = condition.FieldValue;
+            break;
+         case 'endDate' :
+            endDate = condition.FieldValue;
+            break;
+         case 'userId' :
+            userId = condition.FieldValue;
+            break;
+         case 'userRole' :
+            userRole = condition.FieldValue;
+            break;     
+         
+       }
+    })
+ 
+         //applying query on retrieved data fields 
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons_weekly_engagement(${communityId},${channelId},'${startDate}','${endDate}',${userId},${userRole},${pageNumber},${pageSize})`);     
+         let final_result_updated = [];
+         let result:ResponseModel<LessonWeeklyEngagementDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+           
+         queryResult.forEach((entity:any)=>{
+             entity = objectMapper(entity,mapperDto.lessonWeeklyEngagementMapper); // mapping to camel case
  
              final_result_updated.push(entity)
            })
