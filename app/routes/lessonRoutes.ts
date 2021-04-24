@@ -939,6 +939,7 @@ export class LessonRoutes{
       let given_children_array = requestModel.Children;
       let communityId : number = null;
       let channelId : number = null;
+      let userId=null,userRole=null;
       let startDate,endDate;
        
       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
@@ -952,13 +953,19 @@ export class LessonRoutes{
             break;
          case 'endDate' :
             endDate = condition.FieldValue;
-            break;  
+            break; 
+         case 'userId' :
+            userId = condition.FieldValue;
+            break;
+         case 'userRole' :
+            userRole = condition.FieldValue;
+            break;           
          
        }
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons_day_wise(${communityId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_lessons_day_wise(${communityId},'${startDate}','${endDate}',${userId},${userRole},${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopLessonDaywiseDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            

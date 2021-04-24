@@ -540,6 +540,7 @@ export class SectionRoutes{
       let given_children_array = requestModel.Children;
       let communityId : number = null;
       let startDate,endDate;
+      let userId=null,userRole=null;
        
       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
@@ -553,11 +554,17 @@ export class SectionRoutes{
          case 'endDate' :
             endDate = condition.FieldValue;
             break;    
+         case 'userId' :
+            userId = condition.FieldValue;
+            break;  
+         case 'userRole' :
+            userRole = condition.FieldValue;
+            break;     
        }
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses(${communityId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses(${communityId},'${startDate}','${endDate}',${userId},${userRole},${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopCoursesDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            
@@ -595,6 +602,7 @@ export class SectionRoutes{
       let given_children_array = requestModel.Children;
       let communityId : number = null;
       let startDate,endDate;
+      let userId=null,userRole=null;
        
       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
@@ -607,12 +615,18 @@ export class SectionRoutes{
             break;
          case 'endDate' :
             endDate = condition.FieldValue;
-            break;    
+            break;  
+         case 'userId' :
+            userId = condition.FieldValue;
+            break;  
+         case 'userRole' :
+            userRole = condition.FieldValue;
+            break;            
        }
     })
  
          //applying query on retrieved data fields 
-         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses_date_wise(${communityId},'${startDate}','${endDate}',${pageNumber},${pageSize})`);     
+         let queryResult = await this.lessonFacade.genericRepository.query(`SELECT * from public.fn_get_top_courses_date_wise(${communityId},'${startDate}','${endDate}',${userId},${userRole},${pageNumber},${pageSize})`);     
          let final_result_updated = [];
          let result:ResponseModel<TopCoursesDaywiseDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
            
