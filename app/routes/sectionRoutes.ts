@@ -557,9 +557,9 @@ export class SectionRoutes{
          case 'userId' :
             userId = condition.FieldValue;
             break;  
-         case 'userRole' :
-            userRole = condition.FieldValue;
-            break;     
+         case 'roleIds' :
+            userRole = parseInt(condition.FieldValue.split(',')[0]);
+            break;   
        }
     })
  
@@ -619,9 +619,9 @@ export class SectionRoutes{
          case 'userId' :
             userId = condition.FieldValue;
             break;  
-         case 'userRole' :
-            userRole = condition.FieldValue;
-            break;            
+         case 'roleIds' :
+            userRole = parseInt(condition.FieldValue.split(',')[0]);
+            break;           
        }
     })
  
@@ -686,9 +686,9 @@ export class SectionRoutes{
          case 'userId' :
             userId = condition.FieldValue;
             break;
-         case 'userRole' :
-            userRole = condition.FieldValue;
-            break;     
+         case 'roleIds' :
+            userRole = parseInt(condition.FieldValue.split(',')[0]);
+            break;   
          
        }
     })
@@ -754,9 +754,9 @@ export class SectionRoutes{
         case 'userId' :
            userId = condition.FieldValue;
            break;
-        case 'userRole' :
-           userRole = condition.FieldValue;
-           break;     
+        case 'roleIds' :
+          userRole = parseInt(condition.FieldValue.split(',')[0]);
+          break;    
         
       }
    })
