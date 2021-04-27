@@ -255,23 +255,27 @@ export class LessonRoutes{
         userId = condition.FieldValue;
       })
       console.log("extracted userId........")
-      // //code to check if user has access to this lesson
-      // let channelIds = await this.lessonFacade.genericRepository.query(`select distinct("channelUsers".channel_id) from public."lessons" left join
-      //                                                                   public."sections" on "lessons".section_id = "sections".id left join 
-      //                                                                   public."channels" on "sections".channel_id = "channels".id join 
-      //                                                                   public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
-      //                                                                   public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
-      //                                                                   public."groups" on "channelGroups".group_id = "groups".id left join 
-      //                                                                   public."groupUsers" on "groupUsers".group_id = "groups".id
-      //                                                                   where "groups".community_id = ${communityId} and 
-      //                                                                   ("channelUsers".user_id = ${userId} or "groupUsers".user_id = ${userId} or 2 = Any("groupUsers".role_ids) 
-      //                                                                     or "lessons".created_by = ${userId})`
-      //                                                                  );
+      //code to check if user has access to this lesson
+      let channelIds = await this.lessonFacade.genericRepository.query(`select distinct "channelUsers".channel_id ,"groupUsers".group_id from public."lessons" left join
+                                                                        public."sections" on "lessons".section_id = "sections".id left join 
+                                                                        public."channels" on "sections".channel_id = "channels".id join 
+                                                                        public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
+                                                                        public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
+                                                                        public."groups" on "channelGroups".group_id = "groups".id left join 
+                                                                        public."groupUsers" on "groupUsers".group_id = "groups".id
+                                                                        where  "lessons".created_by = ${userId} or 
+                                                                               ("groups".community_id = ${communityId} and
+                                                                               "channels".community_id = ${communityId} and
+                                                                               ("channelUsers".user_id = ${userId} or "groupUsers".user_id = ${userId} or 
+                                                                                2 = Any("groupUsers".role_ids) 
+                                                                               )
+                                                                               )`
+                                                                       );
        
-      // console.log("ChannelIds are......",channelIds);  
-      // if(channelIds.length == 0)
-      //   return "access denied";
-      //end of authentication code
+      console.log("ChannelIds are......",channelIds);  
+      if(channelIds.length == 0)
+        return "access denied";
+     // end of authentication code
       
       conditions = conditions.filter((condition: Condition) => {
         return condition.FieldName !== "userId";
