@@ -256,25 +256,30 @@ export class LessonRoutes{
       })
       console.log("extracted userId........")
     //   //code to check if user has access to this lesson
-    //   let channelIds = await this.lessonFacade.genericRepository.query(`select distinct "channelUsers".channel_id ,"groupUsers".group_id from public."lessons" left join
-    //                                                                     public."sections" on "lessons".section_id = "sections".id left join 
-    //                                                                     public."channels" on "sections".channel_id = "channels".id join 
-    //                                                                     public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
-    //                                                                     public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
-    //                                                                     public."groups" on "channelGroups".group_id = "groups".id left join 
-    //                                                                     public."groupUsers" on "groupUsers".group_id = "groups".id
-    //                                                                     where  "lessons".created_by = ${userId} or 
-    //                                                                            ("groups".community_id = ${communityId} and
-    //                                                                            "channels".community_id = ${communityId} and
-    //                                                                            ("channelUsers".user_id = ${userId} or "groupUsers".user_id = ${userId} or 
-    //                                                                             2 = Any("groupUsers".role_ids) 
-    //                                                                            )
-    //                                                                            )`
-    //                                                                    );
+      let authParams = await this.lessonFacade.genericRepository.query(`select distinct "channelUsers".channel_id ,"groupUsers".group_id, "lessons".id from public."lessons" left join
+                                                                        public."sections" on "lessons".section_id = "sections".id left join 
+                                                                        public."channels" on "sections".channel_id = "channels".id join 
+                                                                        public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
+                                                                        public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
+                                                                        public."groups" on "channelGroups".group_id = "groups".id left join 
+                                                                        public."groupUsers" on "groupUsers".group_id = "groups".id
+                                                                        where  "lessons".created_by = ${userId} or 
+                                                                               ("groups".community_id = ${communityId} and
+                                                                               "channels".community_id = ${communityId} and
+                                                                               ("channelUsers".user_id = ${userId} or "groupUsers".user_id = ${userId} or 
+                                                                                2 = Any("groupUsers".role_ids) 
+                                                                               )
+                                                                               )`
+                                                                       );
        
-    //   console.log("ChannelIds are......",channelIds);  
-    //   if(channelIds.length == 0)
-    //     return "access denied";
+      console.log("Authparams are......",authParams);  
+      let { id, channel_id, group_id } = authParams[0];
+      let final_result: ResponseModel<LessonDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null)
+      if(!id && !channel_id && !group_id){
+        console.log("Auth failed for userId.........: ",userId);
+        return final_result;
+      }
+         
     //  // end of authentication code
       
       conditions = conditions.filter((condition: Condition) => {
@@ -299,7 +304,7 @@ export class LessonRoutes{
       let custom_lesson_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
       //let result;
       let result = await this.lessonFacade.search(requestModel,true,custom_lesson_children_array);
-      console.log("result fetched.....")
+      console.log("result fetched.....",JSON.stringify(result))
       await Promise.all(result.getDataCollection().map(async (lesson:LessonDto)=>{
         await Promise.all(lesson.lessonData.map((lessonData:LessonDataDto)=>{
           let modifiedLessonDataUserArray = [];
@@ -309,6 +314,7 @@ export class LessonRoutes{
               modifiedLessonDataUserArray.push(lessonData.lessonDataUser[i])
             }
           }
+          console.log("Code running....")
           lessonData.lessonDataUser = modifiedLessonDataUserArray;
         }))
       }))
