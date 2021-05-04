@@ -331,10 +331,17 @@ export class ChannelGroupRoutes{
       //   let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_channels_groups(${communityId},${channelId},${groupId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       //   dataCollection.push(final_result);
       // })
-      let final_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},'${channelIds}',${userId},${type},${publicationType},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      type = 'stream'; 
+      let stream_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},'${channelIds}',${userId},'${type}','${publicationType}',${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      type = 'course';
+      let course_result = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_managed_content(${communityId},'${channelIds}',${userId},'${type}','${publicationType}',${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
       let final_result_updated = []
       // dataCollection.push(final_result);
-      final_result.forEach((entity:any)=>{
+      stream_result.forEach((entity:any)=>{
+        // entity = objectMapper(entity,mapperDto.managedContentBasedOnChannelMapper)
+        final_result_updated.push(entity)
+      })
+      course_result.forEach((entity:any)=>{
         // entity = objectMapper(entity,mapperDto.managedContentBasedOnChannelMapper)
         final_result_updated.push(entity)
       })
