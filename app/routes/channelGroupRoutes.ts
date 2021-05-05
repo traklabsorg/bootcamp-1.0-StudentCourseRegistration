@@ -297,6 +297,46 @@ export class ChannelGroupRoutes{
 
   }
 
+  @Get("/getPublishedSectionLessonWithNonNegativeUserProgress/:pageSize/:pageNumber")
+  async getPublishedSectionLessonWithNonNegativeUserProgress(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber:number,@Req() req:Request){
+    try{
+      console.log("Inside Controller ......group by pageSize & pageNumber");
+      let requestModel:RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      requestModel.Filter.PageInfo.PageSize = pageSize;
+      requestModel.Filter.PageInfo.PageNumber = pageNumber;
+
+      let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
+      let dataCollection = [];
+      let communityId=null,channelIds=null,userId=null;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        console.log("condition is......",condition);
+        switch(condition.FieldName.toLowerCase()){
+          case "communityid":
+            communityId = condition.FieldValue;
+            break ;
+          case "channelids":
+            channelIds = condition.FieldValue;
+            break;
+          case "userid":
+            userId = condition.FieldValue;
+            break;
+        }
+      })
+      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_non_negative_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let final_result_updated = [];
+      finalResult.forEach((entity:any)=>{
+        final_result_updated.push(entity);
+      })
+      result.setDataCollection(final_result_updated);
+      return result;
+    }
+    catch(error){
+      console.log("Error is..................",error);
+      throw new HttpException(error,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
   @Get("/findAllManagedContentOfAParticularChannel/:pageSize/:pageNumber")
   async findAllManagedContentOfAParticularChannel(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request) {
     try {
