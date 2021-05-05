@@ -258,7 +258,7 @@ export class LessonRoutes{
     //   //code to check if user has access to this lesson
       let authParams = await this.lessonFacade.genericRepository.query(`select distinct "channelUsers".channel_id ,"groupUsers".group_id, "lessons".id from public."lessons" left join
                                                                         public."sections" on "lessons".section_id = "sections".id left join 
-                                                                        public."channels" on "sections".channel_id = "channels".id join 
+                                                                        public."channels" on "sections".channel_id = "channels".id left join 
                                                                         public."channelUsers" on "channelUsers".channel_id = "sections".channel_id left join 
                                                                         public."channelGroups" on "channelGroups".channel_id = "sections".channel_id left join
                                                                         public."groups" on "channelGroups".group_id = "groups".id left join 
