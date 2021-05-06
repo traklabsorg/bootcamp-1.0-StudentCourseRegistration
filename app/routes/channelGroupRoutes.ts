@@ -322,8 +322,41 @@ export class ChannelGroupRoutes{
             break;
         }
       })
-      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_non_negative_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_specific_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
+      let query = `Select    lessons.id as lesson_id,
+                              sections.id as section_id,
+                              channels.title as channel_title,
+                              sections.title as section_title, 
+                              lessons.title as lesson_title,
+                              sections.section_type,
+                              (CAST (lessons.content_details->>'coverImage' as json) ->> 'ImageSrc') as cover_image_url 
+                              from 
+                              public."lessons" lessons join
+                              public."sections" sections on (sections.id = lessons.section_id) join
+                              public."channels" channels on (channels.id = sections.channel_id)
+                              where channels.id in (${channelIds}) and channels.community_id = ${communityId}`;
+      let allLessons = await this.channelGroupFacade.genericRepository.query(query);
+      //console.log("Result of new query is.......",allLessons);                    
+      // let givenChannelIds = channelIds.split(",");
+      allLessons.forEach(lesson => {
+        let isPresent = finalResult.find(result=>result.lesson_id == lesson.lesson_id);
+        if(!isPresent){
+          lesson.user_progress_sections = 0;
+          lesson.user_progress_lessons = 0;
+          lesson.user_read_count_lessons = 0;
+          lesson.user_image_url = finalResult[0].user_image_url;
+          lesson.user_id = userId;
+          lesson.user_name = finalResult[0].user_name;
+          finalResult.push(lesson);
+        }
+        
+      });
+      
+      
+      
+      
       let final_result_updated = [];
+
       finalResult.forEach((entity:any)=>{
         final_result_updated.push(entity);
       })
