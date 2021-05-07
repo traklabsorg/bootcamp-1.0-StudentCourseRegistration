@@ -344,9 +344,9 @@ export class ChannelGroupRoutes{
           lesson.user_progress_sections = 0;
           lesson.user_progress_lessons = 0;
           lesson.user_read_count_lessons = 0;
-          lesson.user_image_url = finalResult[0].user_image_url;
+          lesson.user_image_url = (finalResult.length)?finalResult[0].user_image_url:null;
           lesson.user_id = userId;
-          lesson.user_name = finalResult[0].user_name;
+          lesson.user_name = (finalResult.length)?finalResult[0].user_name:null;
           finalResult.push(lesson);
         }
         
