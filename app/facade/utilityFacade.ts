@@ -91,7 +91,7 @@ public sns_sqs = SNS_SQS.getInstance();
             return emailIds;
     }
 
-    async assignIsPublishedFieldsToSectionAndLesson(result:any,findUserDeatils?:boolean):Promise<any>{
+    async assignIsPublishedFieldsToSectionAndLesson(result:any,findUserDetails?:boolean):Promise<any>{
         let publishedLessonCreatorIds = [];
         console.log("\n\n\n\n\n\n\n\n\n\n\n\nBefore assignIsPublishedFieldsToSectionAndLesson....result is...",result,"\n\n\n\n\n\n\n\n\n\n\n\n\n")    
         
@@ -172,17 +172,17 @@ public sns_sqs = SNS_SQS.getInstance();
         // })
         
         console.log("Result getting returned is.....",result);
-        if(findUserDeatils == true){
+        if(findUserDetails == true){
             let userDetails = await this.getUserDetails(publishedLessonCreatorIds);
             if(publishedLessonCreatorIds.length == 0 || publishedLessonCreatorIds == [null])
-            userDetails.DataCollection = null;
+               userDetails.DataCollection = [];
             console.log("Userdetails......",userDetails);
             // console.log("result is.......",result);
 
             // let myJSON = {};
             // myJSON["userDetails"] = userDetails.DataCollection
             // result.DataCollection.push(myJSON);
-            if(userDetails.DataCollection != null)
+            //if(userDetails.DataCollection != null)
             result.DataCollection.push(userDetails.DataCollection);
             console.log("Final TResult to be returned is....",result);
             return result
