@@ -142,6 +142,7 @@ public sns_sqs = SNS_SQS.getInstance();
                         // delete sample_section.lesson[k]
                         // delete result[i].section[j].lesson[k]
                         sample_section.lesson[k].isPublished = false;
+                        publishedLessonCreatorIds.push(sample_section.lesson[k].CreatedBy);
                         }
                         else{
                             publishedLessonCreatorIds.push(sample_section.lesson[k].CreatedBy);
@@ -154,6 +155,7 @@ public sns_sqs = SNS_SQS.getInstance();
                 }
                 else{
                     sample_section.isPublished = false;
+                    publishedLessonCreatorIds.push(sample_section.CreatedBy);
                 }
                 
             }
