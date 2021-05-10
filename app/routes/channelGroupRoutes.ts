@@ -16,13 +16,17 @@ import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
 import { Message } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/Message';
 import { Condition } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/condition';
 import { ServiceOperationResultType } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ServiceOperationResultType';
+import { LessonFacade } from 'app/facade/lessonFacade';
+import { UtilityFacade } from 'app/facade/utilityFacade';
+import { ConditionalOperation } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/conditionOperation';
 let mapperDto = require('../../submodules/platform-3.0-Mappings/channelGroupMapper');
 
 
 @Controller('channelGroup')
 export class ChannelGroupRoutes{
 
-  constructor(private channelGroupFacade: ChannelGroupFacade) { }
+  constructor(private channelGroupFacade: ChannelGroupFacade,private lessonFacade: LessonFacade,
+              private utilityFacade: UtilityFacade) { }
 
   private sns_sqs = SNS_SQS.getInstance();
   private topicArray = ['CHANNELGROUP_ADD','CHANNELGROUP_UPDATE','CHANNELGROUP_DELETE'];
@@ -323,7 +327,8 @@ export class ChannelGroupRoutes{
         }
       })
       let finalResult = await this.channelGroupFacade.genericRepository.query(`SELECT * FROM public.fn_get_published_section_lesson_with_specific_user_progress(${communityId},'${channelIds}',${userId},${requestModel.Filter.PageInfo.PageNumber},${requestModel.Filter.PageInfo.PageSize})`)
-      let query = `Select    lessons.id as lesson_id,
+      // query to get all lessons in the given section with required fields 
+      let query = `Select    lessons.id as lesson_id, 
                               sections.id as section_id,
                               channels.title as channel_title,
                               sections.title as section_title, 
@@ -338,9 +343,36 @@ export class ChannelGroupRoutes{
       let allLessons = await this.channelGroupFacade.genericRepository.query(query);
       //console.log("Result of new query is.......",allLessons);                    
       // let givenChannelIds = channelIds.split(",");
+
+       //code for filtering out published lessons
+       let lessonRequestModel: RequestModelQuery = new RequestModelQuery();
+       lessonRequestModel.Children = ['lesson'];
+       lessonRequestModel.Filter.Conditions = [];
+       allLessons.forEach(lesson => {
+         let isPresent = finalResult.find(result=>result.lesson_id == lesson.lesson_id);
+         if(!isPresent){
+           let condition:Condition = new Condition();
+           condition.FieldName = 'Id';
+           condition.FieldValue = lesson.lesson_id;
+           condition.ConditionalSymbol = ConditionalOperation.Or;
+           lessonRequestModel.Filter.Conditions.push(condition);
+         }
+ 
+       })
+       
+       let custom_section_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+       let publishedLessonResult = await this.lessonFacade.search(lessonRequestModel,true,custom_section_children_array);
+       let final_publishedLessonResult = await this.utilityFacade.assignIsPublishedFieldsToLesson(publishedLessonResult,true);
+       //console.log("published lessons......",JSON.stringify(publishedLessonResult.getDataCollection()[0]))
+       //end of code for filtering published lessons
+      
+      //finally applying the published lesson filter on the allLessons obtained 
       allLessons.forEach(lesson => {
         let isPresent = finalResult.find(result=>result.lesson_id == lesson.lesson_id);
-        if(!isPresent){
+        let isPublished = final_publishedLessonResult.getDataCollection().find(result=>result.Id == lesson.lesson_id && result.isPublished == true)
+        if(!isPresent && isPublished){
+          //check whether the lesson is published or not
+          //end of code to check lesson published
           lesson.user_progress_sections = 0;
           lesson.user_progress_lessons = 0;
           lesson.user_read_count_lessons = 0;
@@ -352,13 +384,15 @@ export class ChannelGroupRoutes{
         
       });
       
+     
       
       
       
       let final_result_updated = [];
 
-      finalResult.forEach((entity:any)=>{
-        final_result_updated.push(entity);
+      finalResult.forEach((lesson:any)=>{
+        
+        final_result_updated.push(lesson);
       })
       result.setDataCollection(final_result_updated);
       return result;
