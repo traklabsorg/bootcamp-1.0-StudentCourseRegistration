@@ -365,7 +365,7 @@ export class ChannelUserRoutes implements OnModuleInit {
   @Delete('/')
   async deleteChannelUser(@Body() body:any):Promise<any>{
     try {
-      await console.log("Inside DeleteProduct of controller....body id..." + JSON.stringify(body.DataCollection));
+      console.log("Inside DeleteProduct of controller....body id..." + JSON.stringify(body.DataCollection));
       let result: ResponseModel<ChannelUserDto> = new ResponseModel(body.RequestGuid, [], null, "200", null, null, null, body.SocketId, body.CommunityUrl)
       let dataCollection = []
       body.DataCollection.forEach(async (dto: ChannelUserDto) => {

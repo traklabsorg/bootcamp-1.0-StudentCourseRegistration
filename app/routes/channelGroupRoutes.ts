@@ -339,7 +339,8 @@ export class ChannelGroupRoutes{
                               public."lessons" lessons join
                               public."sections" sections on (sections.id = lessons.section_id) join
                               public."channels" channels on (channels.id = sections.channel_id)
-                              where channels.id in (${channelIds}) and channels.community_id = ${communityId}`;
+                              where channels.id in (${channelIds}) and channels.community_id = ${communityId}
+                              and sections."is_Hidden" = false`;
       let allLessons = await this.channelGroupFacade.genericRepository.query(query);
       //console.log("Result of new query is.......",allLessons);                    
       // let givenChannelIds = channelIds.split(",");
