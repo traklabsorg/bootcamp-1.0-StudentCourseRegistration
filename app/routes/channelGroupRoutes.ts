@@ -332,6 +332,7 @@ export class ChannelGroupRoutes{
                               sections.id as section_id,
                               channels.title as channel_title,
                               sections.title as section_title, 
+                              CAST(sections.section_details->>'coverimage' as character varying) as section_cover_image,
                               lessons.title as lesson_title,
                               sections.section_type,
                               (CAST (lessons.content_details->>'coverImage' as json) ->> 'ImageSrc') as cover_image_url 
@@ -380,6 +381,8 @@ export class ChannelGroupRoutes{
           lesson.user_image_url = (finalResult.length)?finalResult[0].user_image_url:null;
           lesson.user_id = userId;
           lesson.user_name = (finalResult.length)?finalResult[0].user_name:null;
+          lesson.first_name = (finalResult.length)?finalResult[0].first_name:null;
+          lesson.last_name = (finalResult.length)?finalResult[0].last_name:null;
           finalResult.push(lesson);
         }
         

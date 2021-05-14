@@ -18,6 +18,7 @@ import { LessonDataFacade } from "./lessonDataFacade";
 import { RequestModelQuery } from "submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModelQuery";
 import { UtilityFacade } from "./utilityFacade";
 import { Label, NotificationType } from "submodules/platform-3.0-Dtos/notificationDto";
+import { LessonDto } from "submodules/platform-3.0-Dtos/lessonDto";
 @Injectable()
 export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDataReviewDto> {
     constructor(@InjectRepository(LessonDataReview) private readonly lessonDataReviewRepository: Repository<LessonDataReview>,public http:HttpService,private lessonDataFacade:LessonDataFacade,private utilityFacade:UtilityFacade) {
@@ -48,6 +49,7 @@ export class LessonDataReviewFacade extends AppService<LessonDataReview,LessonDa
                     this.createNotification(result.getDataCollection()[0].lesson.CreatedBy,null,Label.courseRejected,NotificationType.email,lessonDataReview.CreationDate,courseNotificationData);
                }
                else{
+                
                 //code for coursePublished notification
                 let coursePublishedNotification = {
                   "courseId" : courseId,
