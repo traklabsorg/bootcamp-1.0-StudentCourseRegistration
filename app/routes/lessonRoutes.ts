@@ -869,30 +869,30 @@ export class LessonRoutes{
     }
   }
 
-  // // endpoint for published Lessons count
-  // @Get("/getPublishedLessonCount/:pageSize/:pageNumber")
-  // async getPublishedLessonCount(@Req() request: Request){
-  //   try{
-  //     console.log("getPublishedLessonsCount ............");
-  //     let requestModel: RequestModelQuery = JSON.parse(request.headers['requestmodel'].toString());
-  //     let communityId : number = null;
-  //     let channelId : number = null;
-  //     requestModel.Filter.Conditions.forEach((condition:Condition)=>{
-  //       switch(condition.FieldName){
-  //         case 'communityId': communityId = condition.FieldValue;
-  //         break;
-  //         case 'channelId': channelId = condition.FieldValue;
-  //         break;
-  //       }
-  //     })
+  // endpoint for published Lessons count
+  @Get("/getPublishedLessonCount/:pageSize/:pageNumber")
+  async getPublishedLessonCount(@Req() request: Request){
+    try{
+      console.log("getPublishedLessonsCount ............");
+      let requestModel: RequestModelQuery = JSON.parse(request.headers['requestmodel'].toString());
+      let communityId : number = null;
+      let channelId : number = null;
+      requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+        switch(condition.FieldName){
+          case 'communityId': communityId = condition.FieldValue;
+          break;
+          case 'channelId': channelId = condition.FieldValue;
+          break;
+        }
+      })
 
-  //     let publishedLessonCount = await this.lessonFacade.getPublishedLessonCount(communityId,channelId);
-  //     return publishedLessonCount;
-  //   }
-  //   catch(error){
-  //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
+      let publishedLessonCount = await this.lessonFacade.getPublishedLessonCount(communityId,channelId);
+      return publishedLessonCount;
+    }
+    catch(error){
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   // endpoint to get Top lesson Analytics
   @Get("/getTopLessons/:pageSize/:pageNumber")

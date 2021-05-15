@@ -126,12 +126,16 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
       })
      
 
-      let custom_section_children_array = [['lesson','lessonData'],['lessonData','lessonDataUser'],['lessonData','lessonDataReview']];
+      let custom_section_children_array = [['lesson','lessonData'],['lessonData','lessonDataReview']];
       let publishedLessonResult = await this.search(lessonRequestModel,true,custom_section_children_array);
+      console.log("Result is ....",publishedLessonResult[0])
       let final_publishedLessonResult = await this.assignIsPublishedFieldsToLesson(publishedLessonResult,false);
-      console.log("Result is.....",final_publishedLessonResult[0]);
-      final_publishedLessonResult.filter((lesson=>lesson.isPublished == true));
-      return final_publishedLessonResult.length;                                                                 
+      console.log("Result is.....",final_publishedLessonResult.getDataCollection().length);
+      let filteredLessons = final_publishedLessonResult.getDataCollection().filter((lesson=>lesson.isPublished == true));
+      let publishedLessonCount = {
+        "publishedLessonsCount": filteredLessons.length 
+      }
+      return publishedLessonCount;                                                                 
     } 
 
 
