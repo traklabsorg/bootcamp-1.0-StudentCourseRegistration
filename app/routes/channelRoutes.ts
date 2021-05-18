@@ -6,7 +6,7 @@ import { plainToClass } from 'class-transformer';
 // import { Client, ClientKafka, EventPattern, MessagePattern } from '@nestjs/microservices';
 // import { microserviceConfig } from 'app/microserviceConfig';
 import { Request } from 'express';
-import { ChannelDetailsReportDto, ChannelDto } from '../../submodules/platform-3.0-Dtos/channelDto';
+import { ChannelDetailsReportDto, ChannelDto, ChannelLatestContentDto } from '../../submodules/platform-3.0-Dtos/channelDto';
 import { RequestModel} from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/RequestModel';
 import { ResponseModel } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/submodules/platform-3.0-Common/common/ResponseModel';
 import { SNS_SQS } from 'submodules/platform-3.0-AWS/SNS_SQS';
@@ -385,6 +385,55 @@ export class ChannelRoutes implements OnModuleInit{
      }
    }
   
+
+   // endpoint to get latest channel content
+   @Get("/getLatestChannelContent/:pageSize/:pageNumber")
+   async getLatestChannelContent(@Param('pageSize') pageSize: number,@Param('pageNumber') pageNumber: number,@Req() req:Request): Promise<ResponseModel<ChannelLatestContentDto>>{
+     try {
+       console.log("getLatestChannelContent ......group by pageSize & pageNumber");
+       let requestModel: RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
+      //  requestModel.Filter.PageInfo.PageSize = pageSize;
+      //  requestModel.Filter.PageInfo.PageNumber = pageNumber;
+       
+       let communityId : number = null;
+       let channelIds : string = "";
+       
+        
+       // EXTRACTING FIELDS FROM REQUEST MODEL QUERY
+       requestModel.Filter.Conditions.forEach((condition: Condition)=>{
+        switch(condition.FieldName){
+          case 'communityId':
+            communityId = condition.FieldValue;
+            break;
+          case 'channelIds':
+            channelIds = condition.FieldValue;
+            break
+             
+        }
+     })
+  
+          //applying query on retrieved data fields 
+          let queryResult = await this.channelFacade.genericRepository.query(`SELECT * from public.fn_get_latest_channel_content(${communityId},
+                                                                            '${channelIds}',${pageNumber},${pageSize})`);     
+          let final_result_updated = [];
+          let result:ResponseModel<ChannelLatestContentDto> = new ResponseModel("SampleInbuiltRequestGuid", null, ServiceOperationResultType.success, "200", null, null, null, null, null);
+            
+          queryResult.forEach((entity:any)=>{
+              entity = objectMapper(entity,mapperDto.channelLatestContentMapper); // mapping to camel case
+  
+              final_result_updated.push(entity)
+            })
+          result.setDataCollection(final_result_updated);
+          return result;
+  
+           
+       
+     } catch (error) {
+       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+   }
+  
+
 
 
   // @Get("/count/findRecord/one")
