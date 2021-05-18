@@ -334,11 +334,17 @@ export class ChannelGroupRoutes{
                               sections.title as section_title, 
                               CAST(sections.section_details->>'coverimage' as character varying) as section_cover_image,
                               lessons.title as lesson_title,
+                              users1.id as user_id,
+                              users1.user_name, 
+                              CAST(users1.user_details->>'firstName'as character varying),
+                              CAST(users1.user_details->>'lastName'as character varying),
+                              CAST(users1.user_image as text),
                               sections.section_type,
                               (CAST (lessons.content_details->>'coverImage' as json) ->> 'ImageSrc') as cover_image_url 
                               from 
                               public."lessons" lessons join
                               public."sections" sections on (sections.id = lessons.section_id) join
+                              public."users" users1 ON (users1.id = lessons.created_by) join
                               public."channels" channels on (channels.id = sections.channel_id)
                               where channels.id in (${channelIds}) and channels.community_id = ${communityId}
                               and sections."is_Hidden" = false`;
@@ -378,11 +384,11 @@ export class ChannelGroupRoutes{
           lesson.user_progress_sections = 0;
           lesson.user_progress_lessons = 0;
           lesson.user_read_count_lessons = 0;
-          lesson.user_image_url = (finalResult.length)?finalResult[0].user_image_url:null;
-          lesson.user_id = userId;
-          lesson.user_name = (finalResult.length)?finalResult[0].user_name:null;
-          lesson.first_name = (finalResult.length)?finalResult[0].first_name:null;
-          lesson.last_name = (finalResult.length)?finalResult[0].last_name:null;
+          //lesson.user_image_url = (finalResult.length)?finalResult[0].user_image_url:null;
+          // lesson.user_id = userId;
+          // lesson.user_name = (finalResult.length)?finalResult[0].user_name:null;
+          // lesson.first_name = (finalResult.length)?finalResult[0].first_name:null;
+          // lesson.last_name = (finalResult.length)?finalResult[0].last_name:null;
           finalResult.push(lesson);
         }
         

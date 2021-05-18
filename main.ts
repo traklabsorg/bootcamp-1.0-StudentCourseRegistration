@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { ApiGatewayModule } from 'app-gateway.module';
 import { apiGatewayConfig } from 'app/apiGatewayConfig';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 // import { microserviceConfig } from "./app/microserviceConfig";
 
@@ -41,7 +42,13 @@ async function bootstrap() {
   //   },
   // });
   // app.connectMicroservice(microserviceConfig);
-  
+  const config = new DocumentBuilder()
+    .setTitle('Channel Microservice')
+    .setDescription('Channel Microservice API Documentation')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   
 

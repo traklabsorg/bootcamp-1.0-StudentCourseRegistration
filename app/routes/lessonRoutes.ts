@@ -885,7 +885,7 @@ export class LessonRoutes{
           break;
         }
       })
-
+      console.log("Calling facade......")
       let publishedLessonCount = await this.lessonFacade.getPublishedLessonCount(communityId,channelId);
       return publishedLessonCount;
     }
