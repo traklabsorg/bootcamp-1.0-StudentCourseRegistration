@@ -334,17 +334,39 @@ export class ChannelGroupRoutes{
                               sections.title as section_title, 
                               CAST(sections.section_details->>'coverimage' as character varying) as section_cover_image,
                               lessons.title as lesson_title,
-                              users1.id as user_id,
-                              users1.user_name, 
-                              CAST(users1.user_details->>'firstName'as character varying),
-                              CAST(users1.user_details->>'lastName'as character varying),
-                              CAST(users1.user_image as text),
+                              users1.id as lesson_creator_user_id,
+                            (CASE WHEN CAST(users1.user_details->>'firstName'as character varying) is not null 
+                                  THEN 
+                                        CAST(users1.user_details->>'firstName'as character varying) 
+                                ELSE '' 
+                                  END ) || ' ' || 
+                            (CASE WHEN CAST(users1.user_details->>'lastName'as character varying) is not null
+                                  THEN
+                                      CAST(users1.user_details->>'lastName'as character varying)
+                                  ELSE ''
+                                        END ) as lesson_creator_user_name
+                                      ,
+                            users2.id as section_creator_user_id,
+                            (CASE WHEN CAST(users2.user_details->>'firstName'as character varying) is not null 
+                                  THEN 
+                                        CAST(users2.user_details->>'firstName'as character varying) 
+                                ELSE '' 
+                                  END ) || ' ' || 
+                            (CASE WHEN CAST(users2.user_details->>'lastName'as character varying) is not null
+                                  THEN
+                                      CAST(users2.user_details->>'lastName'as character varying)
+                                  ELSE ''
+                                        END ) as section_creator_user_name
+                                      ,
+                              CAST(users1.user_image as text) as lesson_creator_image,
+                              CAST(users2.user_image as text) as section_creator_image,
                               sections.section_type,
                               (CAST (lessons.content_details->>'coverImage' as json) ->> 'ImageSrc') as cover_image_url 
                               from 
                               public."lessons" lessons join
                               public."sections" sections on (sections.id = lessons.section_id) join
                               public."users" users1 ON (users1.id = lessons.created_by) join
+                              public."users" users2 ON (users2.id = lessons.created_by) join
                               public."channels" channels on (channels.id = sections.channel_id)
                               where channels.id in (${channelIds}) and channels.community_id = ${communityId}
                               and sections."is_Hidden" = false`;
