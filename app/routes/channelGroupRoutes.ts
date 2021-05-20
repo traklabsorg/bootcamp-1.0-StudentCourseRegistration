@@ -227,7 +227,7 @@ export class ChannelGroupRoutes{
       let requestModel:RequestModelQuery = JSON.parse(req.headers['requestmodel'].toString());
       requestModel.Filter.PageInfo.PageSize = pageSize;
       requestModel.Filter.PageInfo.PageNumber = pageNumber;
-
+      
       let result:ResponseModel<ChannelGroupDto> = new ResponseModel("SampleInbuiltRequest",[],null,"200",null,null,null,"SampleSocketId","CommunityUrl");
       let dataCollection = [];
       let communityId=null,channelIds=null,userId=null;
@@ -346,6 +346,7 @@ export class ChannelGroupRoutes{
                                   ELSE ''
                                         END ) as lesson_creator_user_name
                                       ,
+                            CAST(CAST(lessons.content_details->>'coverImage' as json)->>'ImageSrc' as character varying) as lesson_cover_image,          
                             users2.id as section_creator_user_id,
                             (CASE WHEN CAST(users2.user_details->>'firstName'as character varying) is not null 
                                   THEN 
