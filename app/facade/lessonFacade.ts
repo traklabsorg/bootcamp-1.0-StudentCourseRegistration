@@ -105,13 +105,11 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
       return max_lesson_database_id;
     }
 
-    async getPublishedLessonCount(communityId: number,channelId: number){
+    async getPublishedLessonCount(communityId: number,channelIds: string){
       let sectionIds = await this.genericRepository.query(`Select sections.id from
                                                                  public."sections" sections
                                                                  where sections.channel_id in
-                                                                 (Select channels.id from public."channels" channels where 
-                                                                         channels.community_id = ${communityId} and 
-                                                                         channels.id = ${channelId})`)
+                                                                 (${channelIds})`)
       console.log(sectionIds);
       let lessonRequestModel: RequestModelQuery = new RequestModelQuery();
       lessonRequestModel.Children = ['lesson'];

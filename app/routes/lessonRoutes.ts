@@ -876,17 +876,17 @@ export class LessonRoutes{
       console.log("getPublishedLessonsCount ............");
       let requestModel: RequestModelQuery = JSON.parse(request.headers['requestmodel'].toString());
       let communityId : number = null;
-      let channelId : number = null;
+      let channelIds : string = null;
       requestModel.Filter.Conditions.forEach((condition:Condition)=>{
         switch(condition.FieldName){
           case 'communityId': communityId = condition.FieldValue;
           break;
-          case 'channelId': channelId = condition.FieldValue;
+          case 'channelIds': channelIds = condition.FieldValue;
           break;
         }
       })
       console.log("Calling facade......")
-      let publishedLessonCount = await this.lessonFacade.getPublishedLessonCount(communityId,channelId);
+      let publishedLessonCount = await this.lessonFacade.getPublishedLessonCount(communityId,channelIds);
       return publishedLessonCount;
     }
     catch(error){
