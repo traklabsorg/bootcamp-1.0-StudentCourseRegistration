@@ -106,23 +106,25 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
     }
 
     async getPublishedLessonCount(communityId: number,channelIds: string){
-      let sectionIds = await this.genericRepository.query(`Select sections.id from
-                                                                 public."sections" sections
-                                                                 where sections.channel_id in
-                                                                 (${channelIds})`)
-      console.log(sectionIds);
-      let lessonRequestModel: RequestModelQuery = new RequestModelQuery();
-      lessonRequestModel.Children = ['lesson'];
-      lessonRequestModel.Filter.Conditions = [];
-      sectionIds.map((sectionId:any)=>{
+      let finalResult = [];
+      let channelIdsGiven = channelIds.split(',').map(id=>parseInt(id));
+      await Promise.all(channelIdsGiven.map(async (channelId:number)=>{
+        let sectionIds = await this.genericRepository.query(`Select sections.id from public."sections" sections
+                                                              where sections.channel_id in
+                                                              (${channelId})`)
+        console.log(sectionIds);
+        let lessonRequestModel: RequestModelQuery = new RequestModelQuery();
+        lessonRequestModel.Children = ['lesson'];
+        lessonRequestModel.Filter.Conditions = [];
+        sectionIds.map((sectionId:any)=>{
         let condition:Condition = new Condition();
-           condition.FieldName = 'sectionId';
-           condition.FieldValue = sectionId.id;
-           condition.ConditionalSymbol = ConditionalOperation.Or;
-           lessonRequestModel.Filter.Conditions.push(condition);
-        
-      })
-     
+        condition.FieldName = 'sectionId';
+        condition.FieldValue = sectionId.id;
+        condition.ConditionalSymbol = ConditionalOperation.Or;
+        lessonRequestModel.Filter.Conditions.push(condition);
+
+        })
+
 
       let custom_section_children_array = [['lesson','lessonData'],['lessonData','lessonDataReview']];
       let publishedLessonResult = await this.search(lessonRequestModel,true,custom_section_children_array);
@@ -131,9 +133,15 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
       console.log("Result is.....",final_publishedLessonResult.getDataCollection().length);
       let filteredLessons = final_publishedLessonResult.getDataCollection().filter((lesson=>lesson.isPublished == true));
       let publishedLessonCount = {
-        "publishedLessonsCount": filteredLessons.length 
-      }
-      return publishedLessonCount;                                                                 
+      "channelId" : channelId,   
+      "publishedLessonsCount": filteredLessons.length 
+      }  
+      finalResult.push(publishedLessonCount);
+
+  }))
+
+      
+      return finalResult;                                                                 
     } 
 
 
