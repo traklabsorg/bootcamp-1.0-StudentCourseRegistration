@@ -110,8 +110,10 @@ export class LessonFacade extends AppService<Lesson,LessonDto> {
       let channelIdsGiven = channelIds.split(',').map(id=>parseInt(id));
       await Promise.all(channelIdsGiven.map(async (channelId:number)=>{
         let sectionIds = await this.genericRepository.query(`Select sections.id from public."sections" sections
-                                                              where sections.channel_id in
-                                                              (${channelId})`)
+                                                              where 
+                                                              sections.channel_id in (${channelId})
+                                                              and 
+                                                              sections.section_type = 'stream'`)
         console.log(sectionIds);
         let lessonRequestModel: RequestModelQuery = new RequestModelQuery();
         lessonRequestModel.Children = ['lesson'];

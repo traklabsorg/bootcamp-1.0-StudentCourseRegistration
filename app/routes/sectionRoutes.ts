@@ -721,6 +721,30 @@ export class SectionRoutes{
 }
 }
 
+// endpoint for published Lessons count
+@Get("/getPublishedSectionCount/:pageSize/:pageNumber")
+async getPublishedSectionCount(@Req() request: Request){
+  try{
+    console.log("getPublishedSectionsCount ............");
+    let requestModel: RequestModelQuery = JSON.parse(request.headers['requestmodel'].toString());
+    let communityId : number = null;
+    let channelIds : string = null;
+    requestModel.Filter.Conditions.forEach((condition:Condition)=>{
+      switch(condition.FieldName){
+        case 'communityId': communityId = condition.FieldValue;
+        break;
+        case 'channelIds': channelIds = condition.FieldValue;
+        break;
+      }
+    })
+    console.log("Calling facade......")
+    let publishedSectionCount = await this.sectionFacade.getPublishedSectionCount(communityId,channelIds);
+    return publishedSectionCount;
+  }
+  catch(error){
+    throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
 
  // endpoint to get Top sections weekly engagement Analytics
  @Get("/getWeeklyEngagement/:pageSize/:pageNumber")
