@@ -71,7 +71,7 @@ export class SectionFacade extends AppService<Section,SectionDto> {
 
       assignIsPublishedFieldsToSection(result: ResponseModel<SectionDto>):SectionDto[]{
         
-        console.log("\n\n\n\n\n\n\n\n\n\n\n\nBefore assignIsPublishedFieldsToSection....result is...",result,"\n\n\n\n\n\n\n\n\n\n\n\n\n")    
+        //console.log("\n\n\n\n\n\n\n\n\n\n\n\nBefore assignIsPublishedFieldsToSection....result is...",result,"\n\n\n\n\n\n\n\n\n\n\n\n\n")    
         let sections: SectionDto[] = result.getDataCollection();
         sections.map((section: SectionDto)=>{
             let sectionReviews: SectionReviewDto[] = section.sectionReview;
