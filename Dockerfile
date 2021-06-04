@@ -28,4 +28,4 @@ EXPOSE 3000
 
 # Running the app
 #CMD "npm" "run" "start"
-CMD "npm" "run" "start:dev"
+CMD "npm" "run" "start:prod"

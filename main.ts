@@ -16,7 +16,7 @@ require('dotenv').config();
 
 declare const module: any;
 
-if (process.env.NODE_ENV === "prod" || process.env.NODE_ENV === "dev") {
+if (process.env.NODE_ENV === "prod" || process.env.NODE_ENV === "dev" || process.env.NODE_ENV === "prod") {
   console.log = function () {};
 }
 
