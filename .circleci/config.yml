@@ -2,22 +2,16 @@ version: 2.1
 
 jobs:
   build:
-     docker:
-      - image: circleci/node:latest
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASS
+     machine:
+      image: ubuntu-1604:202007-01
      steps:
         - checkout
         - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
         - run: docker build . -t aayushsomani/lms:$SERVICE_NAME
         - run: docker push aayushsomani/lms:$SERVICE_NAME
   deploy:
-     docker:
-      - image: circleci/node:latest
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASS
+     machine:
+      image: ubuntu-1604:202007-01
      steps:
         - checkout
         - run: echo $ID_RSA | base64 -d > id_rsa && chmod 400 id_rsa
