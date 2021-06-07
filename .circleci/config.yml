@@ -6,6 +6,7 @@ jobs:
       image: ubuntu-1604:202007-01
      steps:
         - checkout
+        - echo $PWD
         - git submodule update --init --remote --recursive
         - git checkout master
         - cd submodules/platform-3.0-AWS
