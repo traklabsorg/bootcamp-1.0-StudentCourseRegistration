@@ -23,8 +23,8 @@ COPY . /usr/src/app
 
 # Building app
 #RUN npm run build
-# RUN nest build
-EXPOSE 3000
+RUN nest build
+EXPOSE 3002
 
 # Running the app
 #CMD "npm" "run" "start"
