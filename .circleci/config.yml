@@ -5,7 +5,7 @@ jobs:
      machine:
       image: ubuntu-1604:202007-01
      steps:
-        - checkout
+        - checkout && git --version
         - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
         - run: docker build . -t aayushsomani/lms:$SERVICE_NAME
         - run: docker push aayushsomani/lms:$SERVICE_NAME
