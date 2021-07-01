@@ -40,6 +40,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { join } from 'path';
+
 @Module({
   imports: [
     MailerModule.forRootAsync({

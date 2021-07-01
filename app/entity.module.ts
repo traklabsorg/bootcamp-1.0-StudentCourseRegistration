@@ -1,82 +1,26 @@
 import { HttpModule, HttpService, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-// import { ProductService } from './product.service';
-
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Channel } from 'submodules/platform-3.0-Entities/channel';
-import { ChannelBillPlan } from 'submodules/platform-3.0-Entities/channelBillPlan';
-import { Group } from 'submodules/platform-3.0-Entities/group';
-import { GroupUser } from 'submodules/platform-3.0-Entities/groupUser';
-import { MeetingProvider } from 'submodules/platform-3.0-Entities/meetingProvider';
-import { Plan } from 'submodules/platform-3.0-Entities/plan';
-import { User } from 'submodules/platform-3.0-Entities/user';
-import { ChannelUser } from 'submodules/platform-3.0-Entities/channelUser'
-import { UserMeetingProvider } from 'submodules/platform-3.0-Entities/userMeetingProvider';
-import { UserMeetingProviders_Meeting } from 'submodules/platform-3.0-Entities/userMeetingProviders_meeting';
-// import { TenantFacade } from './facade/communityFacade';
-// import { TenantRoutes } from './routes/communityRoutes';
-import { BusinessEvent } from 'submodules/platform-3.0-Entities/businessEvent';
-import { BusinessEventSubscriber } from 'submodules/platform-3.0-Entities/businessEventSubscriber';
-import { Coupon } from 'submodules/platform-3.0-Entities/coupon';
-import { Community } from 'submodules/platform-3.0-Entities/communities';
-import { DdEntity } from 'submodules/platform-3.0-Entities/ddEntities';
-import { EnrolledMeetings } from 'submodules/platform-3.0-Entities/enrolledMeetings';
-import { Lesson } from 'submodules/platform-3.0-Entities/lesson';
-import { LessonData } from 'submodules/platform-3.0-Entities/lessonData';
-import { LessonDataReview } from 'submodules/platform-3.0-Entities/lessonDataReview';
-import { LessonDataUser } from 'submodules/platform-3.0-Entities/lessonDataUser';
-import { LiveContent } from 'submodules/platform-3.0-Entities/liveContent';
-import { LiveContentUser } from 'submodules/platform-3.0-Entities/liveContentUser';
-import { Payment } from 'submodules/platform-3.0-Entities/payment';
-import { PaymentCoupon } from 'submodules/platform-3.0-Entities/paymentCoupon';
-import { Section } from 'submodules/platform-3.0-Entities/section';
-import { ServiceConsumer } from 'submodules/platform-3.0-Entities/serviceConsumer';
-import {Notification} from 'submodules/platform-3.0-Entities/notifications'
-import {Subscription} from 'submodules/platform-3.0-Entities/subscription'
-import { SubscriptionOrder } from 'submodules/platform-3.0-Entities/subscriptionOrder';
-import { ChannelGroup } from 'submodules/platform-3.0-Entities/channelGroup';
-import { ChannelBillPlanRoutes } from './routes/channelBillPlanRoutes';
-import { ChannelGroupRoutes } from './routes/channelGroupRoutes';
-import { ChannelRoutes } from './routes/channelRoutes';
-import { EnrolledMeetingRoutes } from './routes/enrolledMeetingRoutes';
-import { LessonDataReviewRoutes } from './routes/lessonDataReviewRoutes';
-import { LessonDataRoutes } from './routes/lessonDataRoutes';
-import { LessonDataUserRoutes } from './routes/lessonDataUserRoutes';
-import { LessonRoutes } from './routes/lessonRoutes';
-import { SectionRoutes } from './routes/sectionRoutes';
-import { ChannelBillPlanFacade } from './facade/channelBillPlanFacade';
-import { ChannelGroupFacade } from './facade/channelGroupFacade';
-import { ChannelFacade } from './facade/channelFacade';
-import { EnrolledMeetingFacade } from './facade/enrolledMeetingFacade';
-import { LessonDataReviewFacade } from './facade/lessonDataReviewFacade';
-import { LessonDataFacade } from './facade/lessonDataFacade';
-import { LessonDataUserFacade } from './facade/lessonDataUserFacade';
-import { LessonFacade } from './facade/lessonFacade';
-import { SectionFacade } from './facade/sectionFacade';
-import { AuthenticationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authentication.middleware';
-import { AuthorizationMiddleware } from 'submodules/platform-3.0-Entities/submodules/platform-3.0-Framework/authorization.middleware';
-// import { ChannelBillPlan } from './smartup_entities/channelBillPlan';
-// import { Channel } from './smartup_entities/channel';
-import { SectionReview } from '../submodules/platform-3.0-Entities/sectionReview';
-// import { ExampleService } from './facade/mailFacade';
-import { AuthController } from './routes/authController';
-import { AuthService } from './facade/authService';
-import { SectionReviewFacade } from './facade/sectionReviewFacade';
-import { SectionReviewRoutes } from './routes/sectionReviewRoutes';
-import { UtilityFacade } from './facade/utilityFacade';
-import { ChannelUserRoutes } from './routes/channelUserRoutes';
-import { ChannelUserFacade } from './facade/channelUserFacade';
-import { CommunityCard } from 'submodules/platform-3.0-Entities/communityCard';
-import { CommunityBills } from 'submodules/platform-3.0-Entities/communityBills';
-import { NuveproUser } from 'submodules/platform-3.0-Entities/nuveproUser';
+import StudentAppService from './appServices/studentAppService';
+import { StudentFacade } from './facade/studentFacade';
+import { RegistrationFacade } from './facade/registrationFacade';
+import RegistrationAppService from './appServices/registrationAppService';
+import CourseAppService from './appServices/courseAppService';
+import { CourseFacade } from './facade/courseFacade';
+import { StudentRoutes } from './routes/studentRoutes';
+import { CourseRoutes } from './routes/courseRoutes';
+import { RegistrationRoutes } from './routes/registrationRoutes';
+import { Student } from 'submodules/platform-3.0-Entities/student';
+import { Course } from 'submodules/platform-3.0-Entities/course';
+import { Registration } from 'submodules/platform-3.0-Entities/registration';
 
 @Module({
   imports: [HttpModule,
-    TypeOrmModule.forFeature([ CommunityBills,CommunityCard,Community,Group,GroupUser,MeetingProvider,Plan,ChannelBillPlan,User,UserMeetingProvider,UserMeetingProviders_Meeting,Channel,ChannelGroup,BusinessEvent,BusinessEventSubscriber,Coupon,Community,DdEntity,EnrolledMeetings,Lesson,LessonData,LessonDataReview,LessonDataUser,LiveContent,LiveContentUser,Notification,Payment,PaymentCoupon,Section,ServiceConsumer,Subscription,SubscriptionOrder,ChannelUser,SectionReview, NuveproUser]),
+    TypeOrmModule.forFeature([ Student,Course,Registration]),
   ],
-  providers: [ ChannelBillPlanFacade,ChannelGroupFacade,ChannelFacade,EnrolledMeetingFacade,LessonDataReviewFacade,LessonDataFacade,LessonDataUserFacade,LessonFacade,SectionFacade,SectionReviewFacade,UtilityFacade,ChannelUserFacade,AuthService],
-  controllers: [ChannelBillPlanRoutes,ChannelGroupRoutes,ChannelRoutes,EnrolledMeetingRoutes,LessonDataReviewRoutes,LessonDataRoutes,LessonDataUserRoutes,LessonRoutes,SectionRoutes,SectionReviewRoutes,ChannelUserRoutes,AuthController]
+  providers: [RegistrationFacade,RegistrationAppService,CourseFacade,CourseAppService,StudentFacade,StudentAppService],
+  controllers: [StudentRoutes,CourseRoutes,RegistrationRoutes]
 })
-// export class  EntityModule{ }
+
 export class EntityModule implements NestModule {
   constructor() {
     console.log("Inside Entity Module....");
@@ -84,8 +28,8 @@ export class EntityModule implements NestModule {
 
   configure(consumer: MiddlewareConsumer) {
     console.log("Inside Consumer baby......");
-    consumer
-      .apply(AuthenticationMiddleware,AuthorizationMiddleware)
-      .forRoutes({path:"/*",method:RequestMethod.ALL});
+    // consumer
+    //   .apply(AuthenticationMiddleware,AuthorizationMiddleware)
+    //   .forRoutes({path:"/*",method:RequestMethod.ALL});
   }
 }
