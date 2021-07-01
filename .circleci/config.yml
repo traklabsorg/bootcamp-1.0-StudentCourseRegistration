@@ -7,6 +7,7 @@ jobs:
      steps:
         - checkout 
         - run: echo $PWD
+        - run: git config user.email "debabratamukherjee@trakinvest.com"
         - run: git submodule update --init --remote --recursive
         - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
         - run: docker build . -t aayushsomani/lms:$SERVICE_NAME
