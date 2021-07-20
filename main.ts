@@ -18,8 +18,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   const config = new DocumentBuilder()
-    .setTitle('Channel Microservice')
-    .setDescription('Channel Microservice API Documentation')
+    .setTitle('StudentCourse-Registration Microservice')
+    .setDescription('StudentCourse-Registration Microservice API Documentation')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
