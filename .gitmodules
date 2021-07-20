@@ -1,12 +1,12 @@
 [submodule "submodules/platform-3.0-Mappings"]
 	path = submodules/platform-3.0-Mappings
-	url = https://github.com/traklabsorg/platform-3.0-Mappings.git
+	url = https://github.com/traklabsorg/bootcamp-1.0-Mappings.git
 [submodule "submodules/platform-3.0-Entities"]
 	path = submodules/platform-3.0-Entities
-	url = https://github.com/traklabsorg/platform-3.0-Entities.git
+	url = https://github.com/traklabsorg/bootcamp-1.0-Entities.git
 [submodule "submodules/platform-3.0-Dtos"]
 	path = submodules/platform-3.0-Dtos
-	url = https://github.com/traklabsorg/platform-3.0-Dtos.git
+	url = https://github.com/traklabsorg/bootcamp-1.0-Dtos.git
 [submodule "submodules/platform-3.0-AWS"]
 	path = submodules/platform-3.0-AWS
-	url = https://github.com/traklabsorg/platform-3.0-AWS.git
+	url = https://github.com/traklabsorg/bootcamp-1.0-AWS.git
